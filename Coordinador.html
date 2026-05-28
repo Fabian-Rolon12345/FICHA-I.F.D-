@@ -114,8 +114,13 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/TU_ID_DE_SCRIPT_AQUI/exec';
+        // 🔑 CONFIGURACIÓN SUPABASE
+        const SUPABASE_URL = 'https://wazkjibgudacpvdwmggw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_vkUugBFW0TDMYC_MNmNRaQ_NTcjns0w';
         const PASSWORD = 'ifdsr2026';
+
+        // Inicializar cliente Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         let allRegistros = [];
         let filteredRegistros = [];
@@ -137,24 +142,36 @@
 
         async function cargarRegistros() {
             const carrera = document.getElementById('filterCarrera').value;
+            const turno = document.getElementById('filterTurno').value;
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Cargando datos...</p></div>';
+            
+            tbody.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Cargando registros...</p></div>';
 
             try {
-                const url = SCRIPT_URL + '?action=getRegistros&carrera=' + encodeURIComponent(carrera) + '&turno=todos';
-                const response = await fetch(url);
-                const result = await response.json();
+                let query = supabase.from('registros').select('*');
                 
-                if (result.success) {
-                    allRegistros = result.data;
-                    filteredRegistros = allRegistros;
-                    renderizarTabla();
-                } else {
-                    tbody.innerHTML = '<div class="error-state">Error al cargar datos.</div>';
+                if (carrera !== 'todas') {
+                    query = query.eq('carrera', carrera);
                 }
+                
+                if (turno !== 'todos') {
+                    query = query.eq('turno', turno);
+                }
+                
+                query = query.order('created_at', { ascending: false });
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                
+                allRegistros = data || [];
+                filteredRegistros = allRegistros;
+                aplicarBusqueda();
+                actualizarStats();
+                
             } catch (error) {
-                console.error(error);
-                tbody.innerHTML = '<div class="error-state">Verifica tu conexión a internet.</div>';
+                console.error('Error:', error);
+                tbody.innerHTML = '<div class="error-state">Error al cargar: ' + error.message + '</div>';
             }
         }
 

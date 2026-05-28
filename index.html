@@ -506,8 +506,12 @@
         // ============================================
         // CONFIGURACIÓN - REEMPLAZAR CON TU URL
         // ============================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/TU_ID_DE_SCRIPT_AQUI/exec';
-        
+        // 🔑 CONFIGURACIÓN SUPABASE
+        const SUPABASE_URL = 'https://wazkjibgudacpvdwmggw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_vkUugBFW0TDMYC_MNmNRaQ_NTcjns0w';
+
+        // Inicializar cliente Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let currentStep = 1;
         let fotoBase64 = '';
 
