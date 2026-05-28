@@ -142,7 +142,6 @@
 
         async function cargarRegistros() {
             const carrera = document.getElementById('filterCarrera').value;
-            const turno = document.getElementById('filterTurno').value;
             const tbody = document.getElementById('tableBody');
             
             tbody.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Cargando registros...</p></div>';
@@ -154,9 +153,6 @@
                     query = query.eq('carrera', carrera);
                 }
                 
-                if (turno !== 'todos') {
-                    query = query.eq('turno', turno);
-                }
                 
                 query = query.order('created_at', { ascending: false });
                 
@@ -249,9 +245,11 @@
         }
 
         function copiarEnlace() {
-            const url = window.location.origin + window.location.pathname.replace('Coordinador.html', 'Ficha.html');
+            // URL fija de Vercel para el formulario de estudiantes
+            const url = 'https://ficha-i-f-d.vercel.app/Ficha.html';
+            
             navigator.clipboard.writeText(url).then(() => {
-                alert('✅ Enlace de inscripción copiado al portapapeles:\n\n' + url);
+                alert('✅ Enlace de inscripción copiado:\n\n' + url);
             }).catch(() => {
                 prompt('Copia este enlace manualmente:', url);
             });
