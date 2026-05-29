@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- ✅ Supabase SDK cargado ANTES del script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="Styles/coordinador.css">
 </head>
 <body>
@@ -17,42 +19,38 @@
             <div class="auth-logo">🔐</div>
             <h2>Acceso Coordinador</h2>
             <p>Instituto de Formación Docente Santa Rosa</p>
-            
-            <div class="auth-error" id="authError">
-                ❌ Contraseña incorrecta.
-            </div>
-            
+            <div class="auth-error" id="authError">❌ Contraseña incorrecta.</div>
             <input type="password" id="passwordInput" placeholder="Ingrese contraseña" maxlength="20">
             <button class="btn btn-primary" style="width: 100%;" onclick="login()">
                 Ingresar al Panel
             </button>
-            
-            <div class="auth-hint">
-                ¿Olvidaste la contraseña? Contacta al administrador.
-            </div>
+            <div class="auth-hint">¿Olvidaste la contraseña? Contacta al administrador.</div>
         </div>
     </div>
 
     <!-- Panel Principal -->
     <div class="coordinator-container" id="panelContainer" style="display: none;">
-        
-        <!-- Header con Logo -->
+
         <header class="panel-header">
             <div class="header-left">
                 <div class="header-logo-circle">
-                    <img src="logo-ifd.png" alt="Logo IFDSR">
+                    <img src="logo-ifd.png" alt="Logo IFDSR"
+                         onerror="this.src='https://placehold.co/55x55/0F6E56/ffffff?text=IFD'">
                 </div>
                 <div class="header-text">
                     <h1>Panel Coordinador</h1>
                     <p>Registros Estudiantiles 2026 · IFDSR Misiones</p>
                 </div>
             </div>
-            <button class="btn btn-outline" onclick="logout()">
-                🚪 Salir
-            </button>
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <span id="badgeNuevos" style="display:none; background:#e53e3e; color:white; font-size:0.75rem; font-weight:700; padding:0.3rem 0.8rem; border-radius:9999px;">
+                    🔔 <span id="badgeCount">0</span> nuevo(s)
+                </span>
+                <button class="btn btn-outline" onclick="logout()">🚪 Salir</button>
+            </div>
         </header>
 
-        <!-- Filtros de Carrera y Botón Copiar -->
+        <!-- Filtros -->
         <div class="filter-bar">
             <div class="filter-group">
                 <label>Carrera:</label>
@@ -70,25 +68,24 @@
                     <option value="Técnico Docente en Integración Pedagógica TIC">Técnico Docente en Integración Pedagógica TIC</option>
                 </select>
             </div>
-
             <button class="btn-copy-link" onclick="copiarEnlace()">
                 📋 Copiar Enlace de Inscripción
             </button>
         </div>
 
-        <!-- Tabla de Datos -->
+        <!-- Tabla -->
         <div class="table-container">
             <div class="table-header">
                 <span>Foto</span>
                 <span>Estudiante</span>
                 <span>C.I.</span>
                 <span>Carrera</span>
-                <span style="text-align: right;">Acción</span>
+                <span style="text-align:right;">Acción</span>
             </div>
             <div id="tableBody">
                 <div class="loading-state">
                     <div class="spinner"></div>
-                    <p>Selecciona una carrera para ver los registros</p>
+                    <p>Cargando registros...</p>
                 </div>
             </div>
         </div>
@@ -107,152 +104,151 @@
                 </div>
                 <button class="modal-close" onclick="closeModal()">✕</button>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Se llena con JS -->
-            </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
     <script>
-        // 🔑 CONFIGURACIÓN SUPABASE
+        // ============================================================
+        // CONFIGURACIÓN
+        // ============================================================
         const SUPABASE_URL = 'https://wazkjibgudacpvdwmggw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_vkUugBFW0TDMYC_MNmNRaQ_NTcjns0w';
-        const PASSWORD = 'ifdsr2026';
+        const PASSWORD     = 'ifdsr2026';
 
-        // Inicializar cliente Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
+        // ✅ Inicializar correctamente con el SDK cargado
+        const { createClient } = window.supabase;
+        const supabaseClient   = createClient(SUPABASE_URL, SUPABASE_KEY);
+
         let allRegistros = [];
-        let filteredRegistros = [];
 
+        // ============================================================
+        // LOGIN
+        // ============================================================
         function login() {
-            const password = document.getElementById('passwordInput').value;
-            if (password === PASSWORD) {
+            if (document.getElementById('passwordInput').value === PASSWORD) {
                 document.getElementById('authContainer').style.display = 'none';
                 document.getElementById('panelContainer').style.display = 'block';
                 cargarRegistros();
+                escucharNuevos(); // ✅ Realtime: notificaciones nuevas
             } else {
-                const error = document.getElementById('authError');
-                error.style.display = 'block';
-                setTimeout(() => error.style.display = 'none', 3000);
+                const err = document.getElementById('authError');
+                err.style.display = 'block';
+                setTimeout(() => err.style.display = 'none', 3000);
             }
         }
 
         function logout() { location.reload(); }
 
+        document.getElementById('passwordInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') login();
+        });
+
+        // ============================================================
+        // CARGAR REGISTROS — tabla 'fichas', columnas correctas
+        // ============================================================
         async function cargarRegistros() {
             const carrera = document.getElementById('filterCarrera').value;
-            const tbody = document.getElementById('tableBody');
-            
+            const tbody   = document.getElementById('tableBody');
             tbody.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Cargando registros...</p></div>';
 
             try {
-                let query = supabase.from('registros').select('*');
-                
+                let query = supabaseClient
+                    .from('fichas')          // ✅ tabla correcta
+                    .select('*')
+                    .order('registrado_en', { ascending: false });
+
                 if (carrera !== 'todas') {
                     query = query.eq('carrera', carrera);
                 }
-                
-                
-                query = query.order('created_at', { ascending: false });
-                
+
                 const { data, error } = await query;
-                
                 if (error) throw error;
-                
+
                 allRegistros = data || [];
-                filteredRegistros = allRegistros;
-                aplicarBusqueda();
-                actualizarStats();
-                
-            } catch (error) {
-                console.error('Error:', error);
-                tbody.innerHTML = '<div class="error-state">Error al cargar: ' + error.message + '</div>';
+                renderizarTabla();
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<div class="error-state">Error al cargar: ${err.message}</div>`;
             }
         }
 
+        // ============================================================
+        // RENDERIZAR TABLA
+        // ============================================================
         function renderizarTabla() {
             const tbody = document.getElementById('tableBody');
-            
-            if (filteredRegistros.length === 0) {
+
+            if (allRegistros.length === 0) {
                 tbody.innerHTML = '<div class="empty-state">No hay estudiantes registrados en esta selección.</div>';
                 return;
             }
-            
-            let html = '';
-            filteredRegistros.forEach(reg => {
-                const fotoSrc = reg.foto || 'https://via.placeholder.com/50x67?text=Sin+Foto';
-                
-                html += `
+
+            tbody.innerHTML = allRegistros.map(reg => {
+                // ✅ Nombres de columnas correctos (snake_case)
+                const foto = reg.foto_url || 'https://placehold.co/50x67?text=Foto';
+                return `
                     <div class="table-row">
-                        <img src="${fotoSrc}" alt="Foto" class="student-foto" onerror="this.src='https://via.placeholder.com/50x67?text=Sin+Foto'">
+                        <img src="${foto}" alt="Foto" class="student-foto"
+                             onerror="this.src='https://placehold.co/50x67?text=Foto'">
                         <div>
-                            <div class="student-name">${reg.apellidoNombre}</div>
-                            <div class="student-email">${reg.emailPersonal}</div>
+                            <div class="student-name">${reg.apellido_nombre || '—'}</div>
+                            <div class="student-email">${reg.email_personal || '—'}</div>
                         </div>
-                        <div>${reg.ci}</div>
-                        <div>${reg.carrera}</div>
-                        <div style="text-align: right;">
-                            <button class="btn-sm" onclick="verDetalle('${reg.id}')">
-                                Ver Detalle
-                            </button>
+                        <div>${reg.ci || '—'}</div>
+                        <div>${reg.carrera || '—'}</div>
+                        <div style="text-align:right;">
+                            <button class="btn-sm" onclick="verDetalle(${reg.id})">Ver Detalle</button>
                         </div>
-                    </div>
-                `;
-            });
-            
-            tbody.innerHTML = html;
+                    </div>`;
+            }).join('');
         }
 
+        // ============================================================
+        // VER DETALLE
+        // ============================================================
         function verDetalle(id) {
             const reg = allRegistros.find(r => r.id === id);
             if (!reg) return;
-            
-            document.getElementById('modalFoto').src = reg.foto || 'https://via.placeholder.com/72x96?text=Foto';
-            document.getElementById('modalNombre').textContent = reg.apellidoNombre;
-            document.getElementById('modalCI').textContent = 'C.I.: ' + reg.ci;
+
+            document.getElementById('modalFoto').src        = reg.foto_url || 'https://placehold.co/80x105?text=Foto';
+            document.getElementById('modalNombre').textContent = reg.apellido_nombre;
+            document.getElementById('modalCI').textContent     = 'C.I.: ' + reg.ci;
             document.getElementById('modalCarrera').textContent = reg.carrera;
-            
-            const fechaReg = new Date(reg.fechaRegistro).toLocaleString('es-PY');
-            
-            let html = `
+
+            const fechaReg = reg.registrado_en
+                ? new Date(reg.registrado_en).toLocaleString('es-PY')
+                : '—';
+
+            document.getElementById('modalBody').innerHTML = `
                 <div class="modal-section-title">👤 Datos Personales</div>
                 <div class="modal-grid">
-                    <div class="modal-field"><label>Fecha Nac.</label><p>${formatDate(reg.fechaNacimiento)}</p></div>
-                    <div class="modal-field"><label>Edad</label><p>${reg.edad}</p></div>
-                    <div class="modal-field"><label>Sexo</label><p>${reg.sexo}</p></div>
-                    <div class="modal-field"><label>Nacionalidad</label><p>${reg.nacionalidad}</p></div>
-                    <div class="modal-field"><label>Ciudad</label><p>${reg.ciudad}</p></div>
-                    <div class="modal-field"><label>Departamento</label><p>${reg.departamento}</p></div>
-                    <div class="modal-field"><label>Celular</label><p>${reg.celular}</p></div>
-                    <div class="modal-field"><label>Email</label><p>${reg.emailPersonal}</p></div>
+                    <div class="modal-field"><label>Fecha Nac.</label><p>${formatDate(reg.fecha_nacimiento)}</p></div>
+                    <div class="modal-field"><label>Edad</label><p>${reg.edad ?? '—'}</p></div>
+                    <div class="modal-field"><label>Sexo</label><p>${reg.sexo || '—'}</p></div>
+                    <div class="modal-field"><label>Nacionalidad</label><p>${reg.nacionalidad || '—'}</p></div>
+                    <div class="modal-field"><label>Ciudad</label><p>${reg.ciudad || '—'}</p></div>
+                    <div class="modal-field"><label>Departamento</label><p>${reg.departamento || '—'}</p></div>
+                    <div class="modal-field"><label>Celular</label><p>${reg.celular || '—'}</p></div>
+                    <div class="modal-field"><label>Email</label><p>${reg.email_personal || '—'}</p></div>
+                    ${reg.email_institucional ? `<div class="modal-field"><label>Email Institucional</label><p>${reg.email_institucional}</p></div>` : ''}
                 </div>
-                
+
                 <div class="modal-section-title">🎓 Datos Académicos</div>
                 <div class="modal-grid">
-                    <div class="modal-field"><label>Cohorte</label><p>${reg.cohorte}</p></div>
-                    <div class="modal-field"><label>Turno</label><p>${reg.turno}</p></div>
+                    <div class="modal-field"><label>Carrera</label><p>${reg.carrera || '—'}</p></div>
+                    <div class="modal-field"><label>Cohorte</label><p>${reg.cohorte || '—'}</p></div>
+                    <div class="modal-field"><label>Turno</label><p>${reg.turno || '—'}</p></div>
                 </div>
-                
+
                 <div class="modal-section-title">📅 Registro</div>
                 <div class="modal-grid">
-                    <div class="modal-field"><label>Fecha</label><p>${fechaReg}</p></div>
+                    <div class="modal-field"><label>Fecha y hora</label><p>${fechaReg}</p></div>
                 </div>
             `;
-            
-            document.getElementById('modalBody').innerHTML = html;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
 
-        function copiarEnlace() {
-            // URL fija de Vercel para el formulario de estudiantes
-            const url = 'https://ficha-i-f-d.vercel.app/index.html';
-            
-            navigator.clipboard.writeText(url).then(() => {
-                alert('✅ Enlace de inscripción copiado:\n\n' + url);
-            }).catch(() => {
-                prompt('Copia este enlace manualmente:', url);
-            });
+            document.getElementById('modalOverlay').classList.remove('hidden');
         }
 
         function closeModal(event) {
@@ -261,15 +257,51 @@
             }
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const [year, month, day] = dateStr.split('-');
-            return day + '/' + month + '/' + year;
+        // ============================================================
+        // REALTIME — notificaciones nuevas en tiempo real
+        // ============================================================
+        function escucharNuevos() {
+            supabaseClient
+                .channel('nuevos-registros')
+                .on('postgres_changes', {
+                    event:  'INSERT',
+                    schema: 'public',
+                    table:  'fichas'
+                }, payload => {
+                    // Agregar al tope de la lista sin recargar
+                    allRegistros.unshift(payload.new);
+                    renderizarTabla();
+
+                    // Mostrar badge
+                    const badge = document.getElementById('badgeNuevos');
+                    const count = document.getElementById('badgeCount');
+                    const actual = parseInt(count.textContent) || 0;
+                    count.textContent = actual + 1;
+                    badge.style.display = 'inline-flex';
+
+                    // Sonido/vibración si está disponible
+                    if (navigator.vibrate) navigator.vibrate(200);
+                })
+                .subscribe();
         }
 
-        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') login();
-        });
+        // ============================================================
+        // COPIAR ENLACE
+        // ============================================================
+        function copiarEnlace() {
+            const url = 'https://ficha-i-f-d.vercel.app/index.html';
+            navigator.clipboard.writeText(url).then(() => {
+                alert('✅ Enlace copiado:\n\n' + url);
+            }).catch(() => {
+                prompt('Copia este enlace:', url);
+            });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
     </script>
 </body>
 </html>
