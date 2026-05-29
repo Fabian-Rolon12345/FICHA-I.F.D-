@@ -517,12 +517,7 @@ function mostrarFicha(i){
     fotoEl.src = 'https://placehold.co/190x240/083d2e/e8f5f0?text=Sin+Foto';
   }
 
-  // Header tags
-  document.getElementById('fNombre').textContent    = r.apellido_nombre || '—';
-  document.getElementById('fCI').textContent        = 'C.I.: '+(r.ci||'—');
-  document.getElementById('fCarreraTag').textContent = abreviar(r.carrera, 32);
-  document.getElementById('fCohorteTag').textContent = 'Cohorte '+(r.cohorte||'—');
-  document.getElementById('fTurnoTag').textContent   = 'Turno '+(r.turno||'—');
+
 
   // Datos personales
   document.getElementById('fNombreD').textContent     = r.apellido_nombre||'—';
