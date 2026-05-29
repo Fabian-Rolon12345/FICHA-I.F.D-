@@ -284,17 +284,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
       </div>
 
       <!-- BARRA DE PDF + IMPRIMIR -->
+      <!-- BARRA PDF + IMPRIMIR COMPACTA -->
       <div class="fu-pdf-bar">
-        <span class="pdf-label">Descargar:</span>
-        <div class="pdf-group">
-          <button class="bsm-pdf" onclick="descargarPDFIndividual()">PDF Individual</button>
-          <button class="bsm-pdf2" onclick="descargarPDFCompleto()">PDF Completo de Carrera</button>
+        <div class="pdf-section">
+          <span class="pdf-label">PDF:</span>
+          <button onclick="descargarPDFIndividual()">Individual</button>
+          <button onclick="descargarPDFCompleto()">Completo</button>
         </div>
+
         <div class="pdf-divider"></div>
-        <span class="pdf-label">Imprimir:</span>
-        <div class="pdf-group">
-          <button class="bsm-print" onclick="imprimirIndividual()">Individual</button>
-          <button class="bsm-print" onclick="imprimirCompleto()">Carrera Completa</button>
+
+        <div class="pdf-section">
+          <span class="pdf-label">Print:</span>
+          <button onclick="imprimirIndividual()">Indiv.</button>
+          <button onclick="imprimirCompleto()">Carrera</button>
         </div>
       </div>
 
