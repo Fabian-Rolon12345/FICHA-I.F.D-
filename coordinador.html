@@ -467,10 +467,7 @@ async function cargarRegistros(){
     if(error) throw error;
     registros=data||[];
     fichaIdx=0;
-    btn.disabled=(registros.length===0);
-    document.getElementById('secNombre').textContent=car;
-    document.getElementById('secCount').textContent=registros.length+' estudiante(s)';
-    st.style.display='flex';
+   
 
     if(registros.length===0){
       sb.innerHTML='<div style="font-size:2.5rem;margin-bottom:1rem">👤</div><p style="font-size:1rem;font-weight:600">No hay estudiantes en esta carrera</p>';
