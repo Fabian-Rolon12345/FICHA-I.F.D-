@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -86,18 +87,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 .ficha-uni{width:100%;max-width:760px;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.14);border:1px solid #d9e8e3}
 
 /* ── CABECERA FICHA ── */
-.fu-head{background:linear-gradient(145deg,#0F6E56 0%,#083d2e 100%);padding:2.25rem 2rem;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;overflow:hidden;gap:1.25rem}
+.fu-head{background:linear-gradient(145deg,#0F6E56 0%,#083d2e 100%);padding:0;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;overflow:hidden}
 .fu-head::before{content:'';position:absolute;right:-80px;top:-80px;width:260px;height:260px;background:rgba(255,255,255,.05);border-radius:50%;pointer-events:none}
 .fu-head::after{content:'';position:absolute;left:-40px;bottom:-80px;width:200px;height:200px;background:rgba(255,255,255,.04);border-radius:50%;pointer-events:none}
 
-/* FOTO GRANDE */
-.fu-foto-wrap{position:relative;z-index:1}
-.fu-foto{width:160px;height:200px;border-radius:16px;object-fit:cover;border:5px solid rgba(255,255,255,.75);box-shadow:0 12px 36px rgba(0,0,0,.4)}
+/* BANDA INSTITUCIÓN - encima de la foto */
+.fu-inst-bar{width:100%;padding:.85rem 1.5rem .7rem;position:relative;z-index:2;background:rgba(0,0,0,.18);border-bottom:1px solid rgba(255,255,255,.12)}
+.fu-inst{font-size:.62rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.85);margin:0}
+
+/* FOTO GRANDE - ocupa su propia zona */
+.fu-foto-wrap{position:relative;z-index:1;padding:2rem 1.5rem 1.5rem;display:flex;justify-content:center}
+.fu-foto{width:200px;height:255px;border-radius:18px;object-fit:cover;object-position:center top;border:5px solid rgba(255,255,255,.85);box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.2)}
 
 /* INFO DEBAJO FOTO */
-.fu-info{color:#fff;position:relative;z-index:1;width:100%}
-.fu-inst{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.7;margin-bottom:.6rem}
-.fu-nombre{font-family:'Lora',serif;font-size:1.75rem;font-weight:700;line-height:1.2;margin-bottom:.4rem}
+.fu-info{color:#fff;position:relative;z-index:1;width:100%;padding:.25rem 1.5rem 1.75rem}
+.fu-nombre{font-family:'Lora',serif;font-size:1.85rem;font-weight:700;line-height:1.2;margin-bottom:.35rem}
 .fu-ci{font-size:.95rem;opacity:.82;font-weight:500;margin-bottom:.85rem}
 .fu-tags{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center}
 .fu-tag{background:rgba(255,255,255,.18);padding:.3rem .85rem;border-radius:9999px;font-size:.72rem;font-weight:700;letter-spacing:.04em;backdrop-filter:blur(6px)}
@@ -127,11 +131,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 .bsm-del:hover{background:#dc2626;color:#fff}
 
 /* ── ACCIONES PDF (separadas en toolbar interno de la ficha) ── */
-.fu-pdf-bar{padding:.85rem 2rem;border-bottom:1px solid var(--borde);display:flex;gap:.5rem;flex-wrap:wrap;background:var(--verde-light)}
+.fu-pdf-bar{padding:.9rem 2rem;border-bottom:1px solid var(--borde);display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;background:var(--verde-light)}
+.pdf-group{display:flex;align-items:center;gap:.4rem}
+.pdf-divider{width:1px;height:28px;background:var(--borde);margin:0 .35rem}
+.pdf-label{font-size:.68rem;font-weight:800;color:var(--verde);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
 .bsm-pdf{background:var(--verde);color:#fff;border:none;padding:.5rem 1rem;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s}
-.bsm-pdf:hover{background:var(--verde-dark)}
+.bsm-pdf:hover{background:var(--verde-dark);transform:translateY(-1px)}
 .bsm-pdf2{background:#1a73e8;color:#fff;border:none;padding:.5rem 1rem;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s}
-.bsm-pdf2:hover{background:#1557b0}
+.bsm-pdf2:hover{background:#1557b0;transform:translateY(-1px)}
+.bsm-print{background:#fff;color:#374151;border:2px solid #d1d5db;padding:.5rem 1rem;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s}
+.bsm-print:hover{background:#f9fafb;border-color:#6b7280;transform:translateY(-1px)}
 
 /* ─────────────── MODAL EDICIÓN ─────────────── */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
@@ -158,7 +167,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
   .toolbar{flex-direction:column}.tf-btns{width:100%}.tf-btns .btn{flex:1;justify-content:center}
   .fu-grid{grid-template-columns:1fr}.fu-grid.g3{grid-template-columns:1fr 1fr}
   .eg{grid-template-columns:1fr}
-  .fu-foto{width:130px;height:165px}
+  .fu-foto{width:155px;height:200px}
+  .fu-pdf-bar{flex-direction:column;align-items:flex-start}
+  .pdf-divider{display:none}
 }
 
 /* ─────────────── PRINT ─────────────── */
@@ -252,14 +263,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
     <!-- ══ FICHA UNIVERSITARIA ══ -->
     <div class="ficha-uni" id="fichaUni">
 
-      <!-- CABECERA: foto grande centrada + info abajo -->
+      <!-- CABECERA: banda institución + foto grande + info abajo -->
       <div class="fu-head">
+        <div class="fu-inst-bar">
+          <div class="fu-inst">Instituto de Formación Docente Santa Rosa · Misiones · Paraguay</div>
+        </div>
         <div class="fu-foto-wrap">
           <img id="fFoto" class="fu-foto" src="" alt="Foto"
-               onerror="this.src='https://placehold.co/160x200/0F6E56/fff?text=Sin+Foto'">
+               onerror="this.onerror=null;this.src='https://placehold.co/190x240/083d2e/e8f5f0?text=Sin+Foto'">
         </div>
         <div class="fu-info">
-          <div class="fu-inst">Instituto de Formación Docente Santa Rosa · Misiones · Paraguay</div>
           <div class="fu-nombre" id="fNombre"></div>
           <div class="fu-ci" id="fCI"></div>
           <div class="fu-tags">
@@ -270,11 +283,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
         </div>
       </div>
 
-      <!-- BARRA DE PDF -->
+      <!-- BARRA DE PDF + IMPRIMIR -->
       <div class="fu-pdf-bar">
-        <span style="font-size:.72rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:.07em;align-self:center;margin-right:.3rem">📥 Descargar:</span>
-        <button class="bsm-pdf" onclick="imprimirIndividual()">📄 PDF Individual</button>
-        <button class="bsm-pdf2" onclick="imprimirCompleto()">📚 PDF Completo de Carrera</button>
+        <span class="pdf-label">📥 Descargar:</span>
+        <div class="pdf-group">
+          <button class="bsm-pdf" onclick="descargarPDFIndividual()">📄 PDF Individual</button>
+          <button class="bsm-pdf2" onclick="descargarPDFCompleto()">📚 PDF Completo de Carrera</button>
+        </div>
+        <div class="pdf-divider"></div>
+        <span class="pdf-label">🖨️ Imprimir:</span>
+        <div class="pdf-group">
+          <button class="bsm-print" onclick="imprimirIndividual()">🖨️ Individual</button>
+          <button class="bsm-print" onclick="imprimirCompleto()">🖨️ Carrera Completa</button>
+        </div>
       </div>
 
       <!-- CUERPO -->
@@ -394,6 +415,8 @@ const db = createClient(SUPA_URL, SUPA_KEY);
 
 let registros = [];
 let fichaIdx  = 0;
+const eliminadosLocales = new Set(); // IDs eliminados localmente para filtrar al recargar
+const editadosLocales   = new Map();  // id -> datos editados, para no perder cambios al recargar
 
 // ══════════ TOAST ══════════
 function toast(msg, tipo='', ms=3000){
@@ -441,7 +464,10 @@ async function cargarRegistros(){
       .order('apellido_nombre', {ascending:true});
     if(error) throw error;
 
-    registros = data || [];
+    // Filtrar eliminados y aplicar ediciones locales (por si la DB tarda en actualizar)
+    registros = (data || [])
+      .filter(r => !eliminadosLocales.has(r.id))
+      .map(r => editadosLocales.has(r.id) ? Object.assign({}, r, editadosLocales.get(r.id)) : r);
     fichaIdx  = 0;
 
     if(registros.length === 0){
@@ -458,8 +484,18 @@ async function cargarRegistros(){
 }
 
 async function actualizarDatos(){
+  // Guardar el CI del registro actual para volver a él después de recargar
+  const ciActual = registros[fichaIdx] ? registros[fichaIdx].ci : null;
   toast('Actualizando...','',1500);
   await cargarRegistros();
+  // Intentar posicionarse en el mismo estudiante que estaba
+  if(ciActual && registros.length > 0){
+    const nuevoIdx = registros.findIndex(r => r.ci === ciActual);
+    if(nuevoIdx >= 0){
+      fichaIdx = nuevoIdx;
+      mostrarFicha(fichaIdx);
+    }
+  }
   if(registros.length > 0) toast('Datos actualizados ✓','ok');
 }
 
@@ -473,8 +509,12 @@ function mostrarFicha(i){
   const r = registros[i];
   if(!r) return;
 
-  // Foto
-  document.getElementById('fFoto').src = r.foto_url || 'https://placehold.co/160x200/0F6E56/fff?text=Sin+Foto';
+  // Foto — forzar recarga limpia para evitar caché de src anterior
+  const fotoEl = document.getElementById('fFoto');
+  fotoEl.src = 'https://placehold.co/190x240/083d2e/e8f5f0?text=Sin+Foto';
+  if(r.foto_url && r.foto_url.trim() !== ''){
+    fotoEl.src = r.foto_url; // Cargar directo — base64 o URL pública de Supabase
+  }
 
   // Header tags
   document.getElementById('fNombre').textContent    = r.apellido_nombre || '—';
@@ -558,10 +598,12 @@ async function guardarEdicion(){
   try{
     const {error} = await db.from('fichas').update(upd).eq('id', r.id);
     if(error) throw error;
-    // Actualizar localmente para que no vuelva lo viejo
-    registros[fichaIdx] = {...r, ...upd};
-    mostrarFicha(fichaIdx);
+    // ✅ Guardar en memoria local Y en el mapa de ediciones para sobrevivir recargas
+    const registroActualizado = Object.assign({}, r, upd);
+    registros[fichaIdx] = registroActualizado;
+    editadosLocales.set(r.id, upd); // persiste aunque se recargue de DB
     cerrarEdicion();
+    mostrarFicha(fichaIdx);
     toast('Ficha actualizada correctamente ✓','ok');
   } catch(err){
     toast('Error al guardar: '+err.message,'err',5000);
@@ -580,7 +622,8 @@ async function eliminarActual(){
     const {error} = await db.from('fichas').delete().eq('id', r.id);
     if(error) throw error;
 
-    // Eliminar del array local inmediatamente
+    // Marcar como eliminado localmente Y eliminar del array
+    eliminadosLocales.add(r.id);
     registros.splice(fichaIdx, 1);
 
     if(registros.length === 0){
@@ -678,6 +721,151 @@ function imprimirCompleto(){
   setTimeout(()=>{ window.print(); pa.style.display='none'; pa.innerHTML=''; }, 350);
 }
 
+// ══════════ DESCARGA PDF (jsPDF) ══════════
+function descargarPDFIndividual(){
+  const r = registros[fichaIdx];
+  if(!r){ toast('No hay ficha seleccionada','err'); return; }
+  generarPDF([r], r.apellido_nombre.replace(/\s+/g,'_')+'_ficha.pdf');
+}
+
+function descargarPDFCompleto(){
+  if(registros.length===0){ toast('No hay fichas para descargar','err'); return; }
+  const carrera = document.getElementById('filterCarrera').value || 'carrera';
+  generarPDF(registros, 'fichas_'+carrera.substring(0,30).replace(/\s+/g,'_')+'.pdf');
+}
+
+async function generarPDF(lista, nombre){
+  toast('Generando PDF...','',4000);
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const W=210, H=297;
+
+    for(let idx=0; idx<lista.length; idx++){
+      const r = lista[idx];
+      if(idx>0) doc.addPage();
+
+      // Fondo cabecera verde
+      doc.setFillColor(15,110,86);
+      doc.roundedRect(10,10,W-20,85,6,6,'F');
+
+      // Nombre institución
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(7); doc.setFont('helvetica','bold');
+      doc.text('INSTITUTO DE FORMACIÓN DOCENTE SANTA ROSA · MISIONES · PARAGUAY', W/2, 22, {align:'center'});
+
+      // Foto (si existe como data:url)
+      const fotoUrl = r.foto_url || '';
+      let fotoOk = false;
+      if(fotoUrl && fotoUrl.startsWith('data:')){
+        try{
+          const ext = fotoUrl.includes('image/png') ? 'PNG' : 'JPEG';
+          doc.addImage(fotoUrl, ext, W/2-17, 26, 34, 44, undefined, 'MEDIUM');
+          fotoOk = true;
+        }catch(e){}
+      }
+      if(!fotoOk){
+        doc.setFillColor(8,61,46);
+        doc.roundedRect(W/2-17, 26, 34, 44, 3, 3,'F');
+        doc.setTextColor(255,255,255); doc.setFontSize(8);
+        doc.text('Sin Foto', W/2, 50, {align:'center'});
+      }
+
+      // Nombre y CI
+      doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+      doc.text(r.apellido_nombre||'—', W/2, 78, {align:'center', maxWidth:W-30});
+      doc.setFontSize(10); doc.setFont('helvetica','normal');
+      doc.text('C.I.: '+(r.ci||'—'), W/2, 84, {align:'center'});
+
+      // Tags carrera / cohorte / turno
+      doc.setFillColor(184,134,11);
+      const carreraText = (r.carrera||'—').substring(0,38);
+      doc.roundedRect(12,88,W-24,8,2,2,'F');
+      doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+      doc.text(carreraText+' · Cohorte '+(r.cohorte||'—')+' · Turno '+(r.turno||'—'), W/2, 93.5, {align:'center'});
+
+      // Datos personales
+      let y = 106;
+      doc.setDrawColor(204,233,224); doc.setLineWidth(0.3);
+      doc.setTextColor(15,110,86); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+      doc.text('👤  DATOS PERSONALES', 14, y);
+      doc.line(14, y+1.5, W-14, y+1.5);
+      y += 7;
+
+      const campos = [
+        ['Apellido y Nombre', r.apellido_nombre], ['C.I.', r.ci],
+        ['Fecha de Nacimiento', fmtDate(r.fecha_nacimiento)], ['Edad', (r.edad||'—')+' años'],
+        ['Sexo', r.sexo], ['Nacionalidad', r.nacionalidad],
+        ['Ciudad / Distrito', r.ciudad], ['Departamento', r.departamento],
+        ['Celular', r.celular], ['Correo Electrónico', r.email_personal],
+      ];
+      const col2start = W/2+2;
+      for(let i=0; i<campos.length; i+=2){
+        const [la, va] = campos[i];
+        const [lb, vb] = campos[i+1]||['',''];
+        // left
+        doc.setFillColor(240,253,248); doc.roundedRect(12,y-3.5,W/2-16,10,1.5,1.5,'F');
+        doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
+        doc.text(la.toUpperCase(), 15, y+0.5);
+        doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+        doc.text(String(va||'—').substring(0,26), 15, y+5.5);
+        // right
+        if(lb){
+          doc.setFillColor(240,253,248); doc.roundedRect(col2start,y-3.5,W/2-16,10,1.5,1.5,'F');
+          doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
+          doc.text(lb.toUpperCase(), col2start+3, y+0.5);
+          doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+          doc.text(String(vb||'—').substring(0,26), col2start+3, y+5.5);
+        }
+        y += 13;
+      }
+
+      // Datos académicos
+      y += 2;
+      doc.setTextColor(15,110,86); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+      doc.text('🎓  DATOS ACADÉMICOS', 14, y);
+      doc.line(14, y+1.5, W-14, y+1.5);
+      y += 7;
+
+      doc.setFillColor(240,253,248); doc.roundedRect(12,y-3.5,W-24,10,1.5,1.5,'F');
+      doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
+      doc.text('CARRERA', 15, y+0.5);
+      doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+      doc.text(String(r.carrera||'—').substring(0,60), 15, y+5.5);
+      y += 13;
+
+      const acads = [['Cohorte', r.cohorte],['Turno', r.turno],['Fecha de Registro', r.registrado_en?new Date(r.registrado_en).toLocaleDateString('es-PY'):'—']];
+      for(let i=0; i<acads.length; i+=2){
+        const [la,va]=acads[i]; const [lb,vb]=acads[i+1]||['',''];
+        doc.setFillColor(240,253,248); doc.roundedRect(12,y-3.5,W/2-16,10,1.5,1.5,'F');
+        doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
+        doc.text(la.toUpperCase(), 15, y+0.5);
+        doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+        doc.text(String(va||'—'), 15, y+5.5);
+        if(lb){
+          doc.setFillColor(240,253,248); doc.roundedRect(col2start,y-3.5,W/2-16,10,1.5,1.5,'F');
+          doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
+          doc.text(lb.toUpperCase(), col2start+3, y+0.5);
+          doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+          doc.text(String(vb||'—'), col2start+3, y+5.5);
+        }
+        y+=13;
+      }
+
+      // Pie
+      doc.setDrawColor(226,232,240); doc.line(14, H-18, W-14, H-18);
+      doc.setTextColor(156,163,175); doc.setFontSize(7); doc.setFont('helvetica','normal');
+      doc.text('Instituto de Formación Docente Santa Rosa · Misiones, Paraguay · Registro 2026 · Documento Oficial', W/2, H-13, {align:'center'});
+    }
+
+    doc.save(nombre);
+    toast('PDF descargado ✓','ok');
+  }catch(e){
+    console.error(e);
+    toast('Error al generar PDF: '+e.message,'err',5000);
+  }
+}
+
 function estilosPrint(){
   return `<style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
@@ -695,11 +883,15 @@ function escucharNuevos(){
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'fichas'}, payload=>{
       const car = document.getElementById('filterCarrera').value;
       if(car && payload.new.carrera===car){
-        registros.push(payload.new);
-        registros.sort((a,b)=>(a.apellido_nombre||'').localeCompare(b.apellido_nombre||''));
-        document.getElementById('sliderWrap').style.display='flex';
-        document.getElementById('stateBox').style.display='none';
-        mostrarFicha(fichaIdx);
+        // Evitar duplicados: verificar que el id no exista ya en el array
+        const existe = registros.some(reg => reg.id === payload.new.id);
+        if(!existe){
+          registros.push(payload.new);
+          registros.sort((a,b)=>(a.apellido_nombre||'').localeCompare(b.apellido_nombre||''));
+          document.getElementById('sliderWrap').style.display='flex';
+          document.getElementById('stateBox').style.display='none';
+          mostrarFicha(fichaIdx);
+        }
       }
       const bn = document.getElementById('badgeNotif');
       const bc = document.getElementById('badgeNum');
