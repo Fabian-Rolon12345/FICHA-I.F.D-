@@ -958,6 +958,16 @@ function abreviar(str, max){
   if(!str) return '—';
   return str.length<=max ? str : str.substring(0,max-1)+'…';
 }
+
+// 🔊 FUNCIÓN PARA ESCUCHAR CAMBIOS EN TIEMPO REAL
+function activarTiempoReal() {
+    supabase
+        .channel('public:registros')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'registros' }, () => {
+            cargarRegistros(); // Recarga la tabla automáticamente al llegar un nuevo registro
+        })
+        .subscribe();
+}
 </script>
 </body>
 </html>
