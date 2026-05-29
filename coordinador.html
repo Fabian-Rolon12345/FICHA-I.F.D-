@@ -218,7 +218,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
     </div>
     <div style="display:flex;align-items:center;gap:.75rem">
       <span class="badge-notif" id="badgeNotif">🔔 <span id="badgeNum">0</span> nuevo(s)</span>
-      <button class="btn-ghost" onclick="logout()"> Salir</button>
+      <button class="btn-ghost" onclick="logout()">🚪 Salir</button>
     </div>
   </header>
 
@@ -611,11 +611,32 @@ async function guardarEdicion(){
     }
 
     const filaGuardada = rows[0];
-    registros[fichaIdx] = filaGuardada;
-    editadosLocales.set(r.id, filaGuardada);
-    cerrarEdicion();
-    mostrarFicha(fichaIdx);
-    toast('✓ Ficha actualizada correctamente','ok',4000);
+    const carreraActual = document.getElementById('filterCarrera').value;
+
+    // Si cambió la carrera, sacar la ficha de la lista actual
+    if(filaGuardada.carrera !== carreraActual){
+      editadosLocales.set(r.id, filaGuardada);
+      registros.splice(fichaIdx, 1);
+      cerrarEdicion();
+
+      if(registros.length === 0){
+        document.getElementById('sliderWrap').style.display = 'none';
+        const sb = document.getElementById('stateBox');
+        sb.style.display = 'block';
+        sb.innerHTML = '<div style="font-size:2.5rem;margin-bottom:1rem">👤</div><p style="font-size:1rem;font-weight:600">No hay más estudiantes en esta carrera</p>';
+      } else {
+        fichaIdx = Math.min(fichaIdx, registros.length - 1);
+        mostrarFicha(fichaIdx);
+      }
+      toast('✓ Ficha movida a "' + filaGuardada.carrera + '"','ok', 5000);
+    } else {
+      // Misma carrera — solo actualizar
+      registros[fichaIdx] = filaGuardada;
+      editadosLocales.set(r.id, filaGuardada);
+      cerrarEdicion();
+      mostrarFicha(fichaIdx);
+      toast('✓ Ficha actualizada correctamente','ok', 4000);
+    }
   } catch(err){
     console.error('Error guardar:', err);
     toast('Error: '+err.message,'err',7000);
