@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="Styles/ficha.css">
     <style>
@@ -34,7 +33,6 @@
             font-size: 1.5rem; margin-right: 1rem;
             box-shadow: 0 4px 12px rgba(103,58,183,0.3);
         }
-        /* ── FOTO AREA fix ── */
         .foto-area {
             text-align: center;
             padding: 1.5rem 1rem;
@@ -77,7 +75,6 @@
         }
         .foto-area.has-photo .foto-change-btn { display: inline-block; }
 
-        /* ── TOAST notificación ── */
         #toast {
             position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px);
             background: #1a1a2e; color: white;
@@ -92,7 +89,6 @@
         #toast.toast-error { background: #c0392b; }
         #toast.toast-success { background: #188038; }
 
-        /* ── Upload progress ── */
         .upload-progress {
             height: 3px; background: var(--borde); border-radius: 2px;
             margin-top: 0.5rem; overflow: hidden; display: none;
@@ -103,7 +99,6 @@
             width: 0%; transition: width 0.3s;
         }
 
-        /* Botón animación */
         .btn-primary, .btn-gold { position: relative; overflow: hidden; }
         .btn-primary::after, .btn-gold::after {
             content: ''; position: absolute;
@@ -114,327 +109,328 @@
         }
         .btn-primary:active::after, .btn-gold:active::after { width: 300px; height: 300px; }
 
-        @keyframes slideDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
-        .success-banner { animation: slideDown 0.5s ease; }
-
-        /* Campo inválido */
         input.invalid, select.invalid { border-color: var(--error) !important; }
+
+        /* === PANTALLA COMPLETADA === */
+        #completadoScreen {
+            display: none;
+            min-height: 100vh;
+            background: var(--google-bg);
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 2rem;
+        }
+        #completadoScreen.show { display: flex; }
+        .completado-circulo {
+            width: 100px; height: 100px;
+            background: linear-gradient(135deg, #188038, #0d5c2b);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 8px 30px rgba(24,128,56,0.4);
+            margin-bottom: 1.5rem;
+            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .completado-titulo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem; font-weight: 700;
+            color: #188038; margin-bottom: 0.75rem;
+        }
+        .completado-sub {
+            font-size: 1rem; color: var(--texto-muted);
+            max-width: 400px;
+        }
     </style>
 </head>
 <body>
 
-<!-- Toast notificación -->
 <div id="toast"></div>
 
-<!-- Header -->
-<header class="header">
-    <div class="header-logo-wrap">
-        <img src="logo-ifd.png" alt="IFDSR Logo" class="header-logo"
-             onerror="this.src='https://placehold.co/90x90/673ab7/ffffff?text=IFDSR'">
-    </div>
-    <div class="header-badge"><span>✦</span><span>Registro Oficial 2026</span></div>
-    <h1>Ficha de Registro Estudiantil</h1>
-    <h2>Instituto de Formación Docente Santa Rosa · Misiones · Paraguay</h2>
-</header>
+<!-- FORMULARIO -->
+<div id="formContainer">
+    <header class="header">
+        <div class="header-logo-wrap">
+            <img src="logo-ifd.png" alt="IFDSR Logo" class="header-logo"
+                 onerror="this.src='https://placehold.co/90x90/673ab7/ffffff?text=IFDSR'">
+        </div>
+        <div class="header-badge"><span>✦</span><span>Registro Oficial 2026</span></div>
+        <h1>Ficha de Registro Estudiantil</h1>
+        <h2>Instituto de Formación Docente Santa Rosa · Misiones · Paraguay</h2>
+    </header>
 
-<!-- Progress Bar (oculta por CSS pero funcional) -->
-<div class="progress-bar">
-    <div class="step-pill active" data-step="1"><span>📷</span><span>Foto</span></div>
-    <div class="step-connector"></div>
-    <div class="step-pill" data-step="2"><span>👤</span><span>Personales</span></div>
-    <div class="step-connector"></div>
-    <div class="step-pill" data-step="3"><span>🎓</span><span>Académicos</span></div>
+    <div class="progress-bar">
+        <div class="step-pill active" data-step="1"><span>📷</span><span>Foto</span></div>
+        <div class="step-connector"></div>
+        <div class="step-pill" data-step="2"><span>👤</span><span>Personales</span></div>
+        <div class="step-connector"></div>
+        <div class="step-pill" data-step="3"><span>🎓</span><span>Académicos</span></div>
+    </div>
+
+    <main class="main">
+
+        <!-- ══ STEP 1: FOTO ══ -->
+        <section class="form-step active" id="step1">
+            <div class="section-header">
+                <div class="section-icon">📷</div>
+                <div>
+                    <div class="section-title">Foto tipo carnet</div>
+                    <div class="section-sub">Esta foto aparecerá en tu ficha de registro oficial</div>
+                </div>
+            </div>
+
+            <div class="foto-area" id="fotoArea">
+                <div class="foto-upload" id="fotoUpload">
+                    <input type="file" id="fotoInput" accept="image/jpeg,image/png,image/webp">
+                    <img id="fotoPreview" alt="Vista previa">
+                    <div class="foto-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        <div>Tocar para<br>subir foto</div>
+                    </div>
+                </div>
+                <div class="foto-area-label">JPG, PNG o WEBP · Máx. 5 MB</div>
+                <button class="foto-change-btn" onclick="document.getElementById('fotoInput').click()">
+                    Cambiar foto
+                </button>
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="upload-bar" id="uploadBar"></div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <div></div>
+                <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+                    Continuar →
+                </button>
+            </div>
+        </section>
+
+        <!-- ══ STEP 2: DATOS PERSONALES ══ -->
+        <section class="form-step" id="step2">
+            <div class="section-header">
+                <div class="section-icon">👤</div>
+                <div>
+                    <div class="section-title">I. Datos Personales</div>
+                    <div class="section-sub">Completar según Cédula de Identidad</div>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label>Apellido y nombre completo <span class="req">*</span></label>
+                <input type="text" id="apellidoNombre" placeholder="Ingrese su nombre completo">
+                <div class="field-error" id="error-apellidoNombre">Este campo es obligatorio</div>
+            </div>
+
+            <div class="field-row">
+                <div class="field-group">
+                    <label>N.º de Cédula de Identidad <span class="req">*</span></label>
+                    <input type="text" id="ci" placeholder="Ej: 1234567" maxlength="8">
+                    <div class="field-error" id="error-ci">Ingrese entre 6 y 8 dígitos</div>
+                </div>
+            </div>
+
+            <!-- FECHA DE NACIMIENTO PRIMERO, EDAD AUTOMÁTICA -->
+            <div class="field-row">
+                <div class="field-group">
+                    <label>Fecha de nacimiento <span class="req">*</span></label>
+                    <input type="date" id="fechaNacimiento" onchange="calcularEdad()">
+                    <div class="field-error" id="error-fechaNacimiento">Seleccione su fecha de nacimiento</div>
+                </div>
+                <div class="field-group">
+                    <label>Edad (calculada automáticamente)</label>
+                    <input type="number" id="edad" placeholder="Se calcula automáticamente" min="16" max="80" readonly
+                           style="background:#f5f5f5; cursor:not-allowed; color:#5f6368;">
+                    <div class="field-error" id="error-edad">Ingrese su edad (16–80)</div>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label>Sexo <span class="req">*</span></label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="sexoFemenino" name="sexo" value="Femenino">
+                        <label for="sexoFemenino"><span class="radio-dot"></span>Femenino</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="sexoMasculino" name="sexo" value="Masculino">
+                        <label for="sexoMasculino"><span class="radio-dot"></span>Masculino</label>
+                    </div>
+                </div>
+                <div class="field-error" id="error-sexo">Seleccione una opción</div>
+            </div>
+
+            <div class="field-row">
+                <div class="field-group">
+                    <label>Nacionalidad <span class="req">*</span></label>
+                    <input type="text" id="nacionalidad" placeholder="Ej: Paraguaya">
+                    <div class="field-error" id="error-nacionalidad">Ingrese su nacionalidad</div>
+                </div>
+                <div class="field-group">
+                    <label>Ciudad / Distrito <span class="req">*</span></label>
+                    <input type="text" id="ciudad" placeholder="Ej: Santa Rosa">
+                    <div class="field-error" id="error-ciudad">Ingrese su ciudad</div>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label>Departamento <span class="req">*</span></label>
+                <select id="departamento">
+                    <option value="">— Seleccionar —</option>
+                    <option value="Alto Paraná">Alto Paraná</option>
+                    <option value="Amambay">Amambay</option>
+                    <option value="Boquerón">Boquerón</option>
+                    <option value="Caaguazú">Caaguazú</option>
+                    <option value="Caazapá">Caazapá</option>
+                    <option value="Canindeyú">Canindeyú</option>
+                    <option value="Capital (Asunción)">Capital (Asunción)</option>
+                    <option value="Concepción">Concepción</option>
+                    <option value="Cordillera">Cordillera</option>
+                    <option value="Guairá">Guairá</option>
+                    <option value="Itapúa">Itapúa</option>
+                    <option value="Misiones" selected>Misiones</option>
+                    <option value="Ñeembucú">Ñeembucú</option>
+                    <option value="Paraguarí">Paraguarí</option>
+                    <option value="Presidente Hayes">Presidente Hayes</option>
+                    <option value="San Pedro">San Pedro</option>
+                </select>
+                <div class="field-error" id="error-departamento">Seleccione su departamento</div>
+            </div>
+
+            <div class="field-group">
+                <label>Número de celular <span class="req">*</span></label>
+                <input type="tel" id="celular" placeholder="Ej: 0981 123 456">
+                <div class="field-error" id="error-celular">Ingrese su número de celular</div>
+            </div>
+
+            <div class="field-group">
+                <label>Correo electrónico personal <span class="req">*</span></label>
+                <input type="email" id="emailPersonal" placeholder="ejemplo@correo.com">
+                <div class="field-error" id="error-emailPersonal">Ingrese un correo válido</div>
+            </div>
+
+            <div class="field-group">
+                <label>Correo institucional <span style="color: var(--texto-muted); font-weight: 400;">(si ya posee)</span></label>
+                <input type="email" id="emailInstitucional" placeholder="ejemplo@ifdsr.edu.py">
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-outline" onclick="prevStep(1)">← Volver</button>
+                <button type="button" class="btn btn-primary" onclick="nextStep(3)">Continuar →</button>
+            </div>
+        </section>
+
+        <!-- ══ STEP 3: DATOS ACADÉMICOS ══ -->
+        <section class="form-step" id="step3">
+            <div class="section-header">
+                <div class="section-icon">🎓</div>
+                <div>
+                    <div class="section-title">II. Datos Académicos</div>
+                    <div class="section-sub">Seleccione su carrera, cohorte y turno</div>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label>Carrera <span class="req">*</span></label>
+                <select id="carrera">
+                    <option value="">— Seleccione una carrera —</option>
+                    <option value="Profesorado EEB 1.º y 2.º Ciclo">Profesorado EEB 1.º y 2.º Ciclo</option>
+                    <option value="Profesorado de Educación Física y Salud">Profesorado de Educación Física y Salud</option>
+                    <option value="Especialización en Ciencias Naturales">Especialización en Ciencias Naturales</option>
+                    <option value="Especialización en Artes — Cohorte 2025-2026">Especialización en Artes — Cohorte 2025-2026</option>
+                    <option value="Especialización en Artes — Cohorte 2026-2027">Especialización en Artes — Cohorte 2026-2027</option>
+                    <option value="Especialización en Matemáticas">Especialización en Matemáticas</option>
+                    <option value="Habilitación Pedagógica para Profesionales — Cohorte 2025-2026">Habilitación Pedagógica para Profesionales — Cohorte 2025-2026</option>
+                    <option value="Habilitación Pedagógica para Profesionales — Cohorte 2026-2027">Habilitación Pedagógica para Profesionales — Cohorte 2026-2027</option>
+                    <option value="Técnico en Gestión Educativa">Técnico en Gestión Educativa</option>
+                    <option value="Técnico Docente en Integración Pedagógica TIC">Técnico Docente en Integración Pedagógica TIC</option>
+                </select>
+                <div class="field-error" id="error-carrera">Seleccione su carrera</div>
+            </div>
+
+            <div class="field-group">
+                <label>Cohorte <span class="req">*</span></label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="cohorte2025" name="cohorte" value="2025-2026">
+                        <label for="cohorte2025"><span class="radio-dot"></span>2025-2026</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="cohorte2026" name="cohorte" value="2026-2027">
+                        <label for="cohorte2026"><span class="radio-dot"></span>2026-2027</label>
+                    </div>
+                </div>
+                <div class="field-error" id="error-cohorte">Seleccione una cohorte</div>
+            </div>
+
+            <div class="field-group">
+                <label>Turno <span class="req">*</span></label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="turnoTarde" name="turno" value="Tarde">
+                        <label for="turnoTarde"><span class="radio-dot"></span>Tarde</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="turnoNoche" name="turno" value="Noche">
+                        <label for="turnoNoche"><span class="radio-dot"></span>Noche</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="turnoTardeNoche" name="turno" value="Tarde/Noche">
+                        <label for="turnoTardeNoche"><span class="radio-dot"></span>Tarde/Noche</label>
+                    </div>
+                </div>
+                <div class="field-error" id="error-turno">Seleccione un turno</div>
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-outline" onclick="prevStep(2)">← Volver</button>
+                <button type="button" class="btn btn-gold" id="btnConfirmar" onclick="confirmarRegistro()">
+                    ✓ Confirmar registro
+                </button>
+            </div>
+        </section>
+
+    </main>
 </div>
 
-<main class="main">
-
-    <!-- Success Banner -->
-    <div class="success-banner" id="successBanner">
-        <div class="success-icon">✓</div>
-        <div>
-            <strong>¡Registro completado exitosamente!</strong><br>
-            Tu ficha fue enviada al coordinador. Guardá o imprimí esta copia.
-        </div>
-    </div>
-
-    <!-- ══ STEP 1: FOTO ══ -->
-    <section class="form-step active" id="step1">
-        <div class="section-header">
-            <div class="section-icon">📷</div>
-            <div>
-                <div class="section-title">Foto tipo carnet</div>
-                <div class="section-sub">Esta foto aparecerá en tu ficha de registro oficial</div>
-            </div>
-        </div>
-
-        <!-- FOTO AREA con id correcto -->
-        <div class="foto-area" id="fotoArea">
-            <div class="foto-upload" id="fotoUpload">
-                <input type="file" id="fotoInput" accept="image/jpeg,image/png,image/webp">
-                <img id="fotoPreview" alt="Vista previa">
-                <div class="foto-placeholder">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                    <div>Tocar para<br>subir foto</div>
-                </div>
-            </div>
-            <div class="foto-area-label">JPG, PNG o WEBP · Máx. 5 MB</div>
-            <button class="foto-change-btn" onclick="document.getElementById('fotoInput').click()">
-                Cambiar foto
-            </button>
-            <div class="upload-progress" id="uploadProgress">
-                <div class="upload-bar" id="uploadBar"></div>
-            </div>
-        </div>
-
-        <div class="nav-buttons">
-            <div></div>
-            <button type="button" class="btn btn-primary" onclick="nextStep(2)">
-                Continuar →
-            </button>
-        </div>
-    </section>
-
-    <!-- ══ STEP 2: DATOS PERSONALES ══ -->
-    <section class="form-step" id="step2">
-        <div class="section-header">
-            <div class="section-icon">👤</div>
-            <div>
-                <div class="section-title">I. Datos Personales</div>
-                <div class="section-sub">Completar según Cédula de Identidad</div>
-            </div>
-        </div>
-
-        <div class="field-group">
-            <label>Apellido y nombre completo <span class="req">*</span></label>
-            <input type="text" id="apellidoNombre" placeholder="Ingrese su nombre completo">
-            <div class="field-error" id="error-apellidoNombre">Este campo es obligatorio</div>
-        </div>
-
-        <div class="field-row">
-            <div class="field-group">
-                <label>N.º de Cédula de Identidad <span class="req">*</span></label>
-                <input type="text" id="ci" placeholder="Ej: 1234567" maxlength="8">
-                <div class="field-error" id="error-ci">Ingrese entre 6 y 8 dígitos</div>
-            </div>
-            <div class="field-group">
-                <label>Edad <span class="req">*</span></label>
-                <input type="number" id="edad" placeholder="Ej: 20" min="16" max="80">
-                <div class="field-error" id="error-edad">Ingrese su edad (16–80)</div>
-            </div>
-        </div>
-
-        <div class="field-group">
-            <label>Fecha de nacimiento <span class="req">*</span></label>
-            <input type="date" id="fechaNacimiento">
-            <div class="field-error" id="error-fechaNacimiento">Seleccione su fecha de nacimiento</div>
-        </div>
-
-        <div class="field-group">
-            <label>Sexo <span class="req">*</span></label>
-            <div class="radio-group">
-                <div class="radio-option">
-                    <input type="radio" id="sexoFemenino" name="sexo" value="Femenino">
-                    <label for="sexoFemenino"><span class="radio-dot"></span>Femenino</label>
-                </div>
-                <div class="radio-option">
-                    <input type="radio" id="sexoMasculino" name="sexo" value="Masculino">
-                    <label for="sexoMasculino"><span class="radio-dot"></span>Masculino</label>
-                </div>
-            </div>
-            <div class="field-error" id="error-sexo">Seleccione una opción</div>
-        </div>
-
-        <div class="field-row">
-            <div class="field-group">
-                <label>Nacionalidad <span class="req">*</span></label>
-                <input type="text" id="nacionalidad" placeholder="Ej: Paraguaya">
-                <div class="field-error" id="error-nacionalidad">Ingrese su nacionalidad</div>
-            </div>
-            <div class="field-group">
-                <label>Ciudad / Distrito <span class="req">*</span></label>
-                <input type="text" id="ciudad" placeholder="Ej: Santa Rosa">
-                <div class="field-error" id="error-ciudad">Ingrese su ciudad</div>
-            </div>
-        </div>
-
-        <div class="field-group">
-            <label>Departamento <span class="req">*</span></label>
-            <select id="departamento">
-                <option value="">— Seleccionar —</option>
-                <option value="Alto Paraná">Alto Paraná</option>
-                <option value="Amambay">Amambay</option>
-                <option value="Boquerón">Boquerón</option>
-                <option value="Caaguazú">Caaguazú</option>
-                <option value="Caazapá">Caazapá</option>
-                <option value="Canindeyú">Canindeyú</option>
-                <option value="Capital (Asunción)">Capital (Asunción)</option>
-                <option value="Concepción">Concepción</option>
-                <option value="Cordillera">Cordillera</option>
-                <option value="Guairá">Guairá</option>
-                <option value="Itapúa">Itapúa</option>
-                <option value="Misiones">Misiones</option>
-                <option value="Ñeembucú">Ñeembucú</option>
-                <option value="Paraguarí">Paraguarí</option>
-                <option value="Presidente Hayes">Presidente Hayes</option>
-                <option value="San Pedro">San Pedro</option>
-            </select>
-            <div class="field-error" id="error-departamento">Seleccione su departamento</div>
-        </div>
-
-        <div class="field-group">
-            <label>Número de celular <span class="req">*</span></label>
-            <input type="tel" id="celular" placeholder="Ej: 0981 123 456">
-            <div class="field-error" id="error-celular">Ingrese su número de celular</div>
-        </div>
-
-        <div class="field-group">
-            <label>Correo electrónico personal <span class="req">*</span></label>
-            <input type="email" id="emailPersonal" placeholder="ejemplo@correo.com">
-            <div class="field-error" id="error-emailPersonal">Ingrese un correo válido</div>
-        </div>
-
-        <div class="field-group">
-            <label>Correo institucional <span style="color: var(--texto-muted); font-weight: 400;">(si ya posee)</span></label>
-            <input type="email" id="emailInstitucional" placeholder="ejemplo@ifdsr.edu.py">
-        </div>
-
-        <div class="nav-buttons">
-            <button type="button" class="btn btn-outline" onclick="prevStep(1)">← Volver</button>
-            <button type="button" class="btn btn-primary" onclick="nextStep(3)">Continuar →</button>
-        </div>
-    </section>
-
-    <!-- ══ STEP 3: DATOS ACADÉMICOS ══ -->
-    <section class="form-step" id="step3">
-        <div class="section-header">
-            <div class="section-icon">🎓</div>
-            <div>
-                <div class="section-title">II. Datos Académicos</div>
-                <div class="section-sub">Seleccione su carrera, cohorte y turno</div>
-            </div>
-        </div>
-
-        <div class="field-group">
-            <label>Carrera <span class="req">*</span></label>
-            <select id="carrera">
-                <option value="">— Seleccionar carrera —</option>
-                <option value="Profesorado EEB 1.º y 2.º Ciclo">Profesorado EEB 1.º y 2.º Ciclo</option>
-                <option value="Profesorado de Educación Física y Salud">Profesorado de Educación Física y Salud</option>
-                <option value="Especialización en Ciencias Naturales">Especialización en Ciencias Naturales</option>
-                <option value="Especialización en Artes — Cohorte 2025-2026">Especialización en Artes — Cohorte 2025-2026</option>
-                <option value="Especialización en Artes — Cohorte 2026-2027">Especialización en Artes — Cohorte 2026-2027</option>
-                <option value="Especialización en Matemáticas">Especialización en Matemáticas</option>
-                <option value="Habilitación Pedagógica para Profesionales — Cohorte 2025-2026">Habilitación Pedagógica para Profesionales — Cohorte 2025-2026</option>
-                <option value="Habilitación Pedagógica para Profesionales — Cohorte 2026-2027">Habilitación Pedagógica para Profesionales — Cohorte 2026-2027</option>
-                <option value="Técnico en Gestión Educativa">Técnico en Gestión Educativa</option>
-                <option value="Técnico Docente en Integración Pedagógica TIC">Técnico Docente en Integración Pedagógica TIC</option>
-            </select>
-            <div class="field-error" id="error-carrera">Seleccione su carrera</div>
-        </div>
-
-        <div class="field-group">
-            <label>Cohorte <span class="req">*</span></label>
-            <div class="radio-group">
-                <div class="radio-option">
-                    <input type="radio" id="cohorte2025" name="cohorte" value="2025-2026">
-                    <label for="cohorte2025"><span class="radio-dot"></span>2025-2026</label>
-                </div>
-                <div class="radio-option">
-                    <input type="radio" id="cohorte2026" name="cohorte" value="2026-2027">
-                    <label for="cohorte2026"><span class="radio-dot"></span>2026-2027</label>
-                </div>
-            </div>
-            <div class="field-error" id="error-cohorte">Seleccione una cohorte</div>
-        </div>
-
-        <div class="field-group">
-            <label>Turno <span class="req">*</span></label>
-            <div class="radio-group">
-                <div class="radio-option">
-                    <input type="radio" id="turnoTarde" name="turno" value="Tarde">
-                    <label for="turnoTarde"><span class="radio-dot"></span>Tarde</label>
-                </div>
-                <div class="radio-option">
-                    <input type="radio" id="turnoNoche" name="turno" value="Noche">
-                    <label for="turnoNoche"><span class="radio-dot"></span>Noche</label>
-                </div>
-                <div class="radio-option">
-                    <input type="radio" id="turnoTardeNoche" name="turno" value="Tarde/Noche">
-                    <label for="turnoTardeNoche"><span class="radio-dot"></span>Tarde/Noche</label>
-                </div>
-            </div>
-            <div class="field-error" id="error-turno">Seleccione un turno</div>
-        </div>
-
-        <div class="nav-buttons">
-            <button type="button" class="btn btn-outline" onclick="prevStep(2)">← Volver</button>
-            <button type="button" class="btn btn-gold" id="btnConfirmar" onclick="confirmarRegistro()">
-                ✓ Confirmar registro
-            </button>
-        </div>
-    </section>
-
-    <!-- ══ RESULTADO ══ -->
-    <div class="result-card" id="resultCard">
-        <div class="result-header">
-            <img id="resultFoto" class="result-foto" src="" alt="Foto del estudiante">
-            <div class="result-info">
-                <div class="result-name" id="resultNombre"></div>
-                <div class="result-ci" id="resultCI"></div>
-                <div class="result-carrera" id="resultCarrera"></div>
-            </div>
-        </div>
-        <div class="result-body">
-            <div class="result-section-title">Datos Personales</div>
-            <div class="result-grid">
-                <div class="result-field"><label>C.I.</label><p id="resCI"></p></div>
-                <div class="result-field"><label>Fecha Nac.</label><p id="resFechaNac"></p></div>
-                <div class="result-field"><label>Edad</label><p id="resEdad"></p></div>
-                <div class="result-field"><label>Sexo</label><p id="resSexo"></p></div>
-                <div class="result-field"><label>Nacionalidad</label><p id="resNacionalidad"></p></div>
-                <div class="result-field"><label>Ciudad</label><p id="resCiudad"></p></div>
-                <div class="result-field"><label>Departamento</label><p id="resDepartamento"></p></div>
-                <div class="result-field"><label>Celular</label><p id="resCelular"></p></div>
-                <div class="result-field"><label>Email</label><p id="resEmail"></p></div>
-            </div>
-            <div class="result-section-title">Datos Académicos</div>
-            <div class="result-grid">
-                <div class="result-field"><label>Carrera</label><p id="resCarrera"></p></div>
-                <div class="result-field"><label>Cohorte</label><p id="resCohorte"></p></div>
-                <div class="result-field"><label>Turno</label><p id="resTurno"></p></div>
-            </div>
-        </div>
-        <div class="result-actions">
-            <button type="button" class="btn btn-outline" onclick="nuevaFicha()">✏️ Nueva ficha</button>
-            <button type="button" class="btn btn-primary" onclick="imprimirFicha()">🖨️ Imprimir ficha</button>
-        </div>
-        <div class="print-note">Instituto de Formación Docente Santa Rosa · Misiones, Paraguay · Registro 2026</div>
-    </div>
-
-</main>
+<!-- ══ PANTALLA FINAL: SOLO "Respuesta completada" ══ -->
+<div id="completadoScreen">
+    <div class="completado-circulo">✓</div>
+    <div class="completado-titulo">Respuesta completada</div>
+    <div class="completado-sub">Tu ficha fue enviada correctamente al coordinador.</div>
+</div>
 
 <script>
-// ============================================================
-// CONFIGURACIÓN SUPABASE
-// ============================================================
 const SUPABASE_URL = 'https://wazkjibgudacpvdwmggw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_vkUugBFW0TDMYC_MNmNRaQ_NTcjns0w';
-
-// Inicializar cliente Supabase (usando window.supabase del CDN)
 const { createClient } = window.supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentStep = 1;
 let fotoBase64 = '';
-let fotoFile = null; // archivo original para subir al storage
+let fotoFile = null;
 
-// ============================================================
-// TOAST
-// ============================================================
+// ── CALCULAR EDAD AUTOMÁTICAMENTE ──
+function calcularEdad() {
+    const fechaVal = document.getElementById('fechaNacimiento').value;
+    if (!fechaVal) return;
+    const hoy = new Date();
+    const nacimiento = new Date(fechaVal);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const m = hoy.getMonth() - nacimiento.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
+    document.getElementById('edad').value = edad > 0 ? edad : '';
+}
+
+// ── TOAST ──
 function showToast(msg, type = 'default', duration = 3500) {
     const t = document.getElementById('toast');
     t.className = type === 'error' ? 'toast-error' : type === 'success' ? 'toast-success' : '';
@@ -444,19 +440,13 @@ function showToast(msg, type = 'default', duration = 3500) {
     setTimeout(() => t.classList.remove('show'), duration);
 }
 
-// ============================================================
-// NAVEGACIÓN
-// ============================================================
+// ── NAVEGACIÓN ──
 function nextStep(step) {
     if (step === 2 && !validateStep1()) return;
     if (step === 3 && !validateStep2()) return;
     goToStep(step);
 }
-
-function prevStep(step) {
-    goToStep(step);
-}
-
+function prevStep(step) { goToStep(step); }
 function goToStep(step) {
     document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
     document.getElementById('step' + step).classList.add('active');
@@ -464,9 +454,7 @@ function goToStep(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ============================================================
-// VALIDACIONES
-// ============================================================
+// ── VALIDACIONES ──
 function validateStep1() {
     if (!fotoBase64) {
         showToast('Por favor, subí una foto de carnet', 'error');
@@ -479,8 +467,7 @@ function validateStep1() {
 
 function validateStep2() {
     let valid = true;
-
-    const textFields = ['apellidoNombre', 'ci', 'edad', 'fechaNacimiento', 'nacionalidad', 'ciudad', 'departamento', 'celular', 'emailPersonal'];
+    const textFields = ['apellidoNombre', 'ci', 'fechaNacimiento', 'nacionalidad', 'ciudad', 'departamento', 'celular', 'emailPersonal'];
     textFields.forEach(id => {
         const el = document.getElementById(id);
         const err = document.getElementById('error-' + id);
@@ -494,16 +481,12 @@ function validateStep2() {
             if (el) el.classList.remove('invalid');
         }
     });
-
-    // Email validación básica
     const emailEl = document.getElementById('emailPersonal');
     if (emailEl && emailEl.value && !/\S+@\S+\.\S+/.test(emailEl.value)) {
         document.getElementById('error-emailPersonal').classList.add('show');
         emailEl.classList.add('invalid');
         valid = false;
     }
-
-    // Sexo
     const sexoErr = document.getElementById('error-sexo');
     if (!document.querySelector('input[name="sexo"]:checked')) {
         sexoErr.classList.add('show');
@@ -511,15 +494,12 @@ function validateStep2() {
     } else {
         sexoErr.classList.remove('show');
     }
-
     if (!valid) showToast('Completá todos los campos obligatorios', 'error');
     return valid;
 }
 
 function validateStep3() {
     let valid = true;
-
-    // Carrera
     const carreraEl = document.getElementById('carrera');
     const carreraErr = document.getElementById('error-carrera');
     if (!carreraEl.value) {
@@ -530,30 +510,23 @@ function validateStep3() {
         carreraErr.classList.remove('show');
         carreraEl.classList.remove('invalid');
     }
-
-    // Cohorte
     if (!document.querySelector('input[name="cohorte"]:checked')) {
         document.getElementById('error-cohorte').classList.add('show');
         valid = false;
     } else {
         document.getElementById('error-cohorte').classList.remove('show');
     }
-
-    // Turno
     if (!document.querySelector('input[name="turno"]:checked')) {
         document.getElementById('error-turno').classList.add('show');
         valid = false;
     } else {
         document.getElementById('error-turno').classList.remove('show');
     }
-
     if (!valid) showToast('Completá todos los campos obligatorios', 'error');
     return valid;
 }
 
-// ============================================================
-// FOTO UPLOAD
-// ============================================================
+// ── FOTO UPLOAD ──
 document.getElementById('fotoInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -569,7 +542,6 @@ function handleFotoFile(file) {
         showToast('Solo se permiten imágenes (JPG, PNG, WEBP)', 'error');
         return;
     }
-
     fotoFile = file;
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -584,7 +556,6 @@ function handleFotoFile(file) {
     reader.readAsDataURL(file);
 }
 
-// Drag & Drop sobre la foto area
 const fotoArea = document.getElementById('fotoArea');
 fotoArea.addEventListener('dragover', e => { e.preventDefault(); fotoArea.classList.add('dragover'); });
 fotoArea.addEventListener('dragleave', () => fotoArea.classList.remove('dragover'));
@@ -595,9 +566,7 @@ fotoArea.addEventListener('drop', e => {
     if (file) handleFotoFile(file);
 });
 
-// ============================================================
-// CONFIRMAR REGISTRO — SUPABASE
-// ============================================================
+// ── CONFIRMAR REGISTRO ──
 async function confirmarRegistro() {
     if (!validateStep3()) return;
 
@@ -608,22 +577,16 @@ async function confirmarRegistro() {
     showToast('Subiendo datos al servidor...', 'default', 8000);
 
     try {
-        // 1. Subir foto a Supabase Storage
         let fotoUrl = '';
         if (fotoFile) {
             const ext = fotoFile.name.split('.').pop().toLowerCase() || 'jpg';
             const ci = document.getElementById('ci').value.trim();
             const fileName = `fotos/${ci}_${Date.now()}.${ext}`;
-
             const { data: storageData, error: storageError } = await supabaseClient
-                .storage
-                .from('estudiantes')
+                .storage.from('estudiantes')
                 .upload(fileName, fotoFile, { cacheControl: '3600', upsert: true, contentType: fotoFile.type });
-
             if (storageError) {
-                // Si no hay bucket configurado, usamos base64 como fallback
-                console.warn('Storage error (usando base64):', storageError.message);
-                fotoUrl = fotoBase64; // fallback: guardar base64 en DB
+                fotoUrl = fotoBase64;
             } else {
                 const { data: publicData } = supabaseClient.storage.from('estudiantes').getPublicUrl(fileName);
                 fotoUrl = publicData?.publicUrl || fotoBase64;
@@ -632,7 +595,6 @@ async function confirmarRegistro() {
             fotoUrl = fotoBase64;
         }
 
-        // 2. Insertar registro en tabla 'fichas'
         const registro = {
             foto_url:            fotoUrl,
             apellido_nombre:     document.getElementById('apellidoNombre').value.trim(),
@@ -653,27 +615,22 @@ async function confirmarRegistro() {
         };
 
         const { data: insertData, error: insertError } = await supabaseClient
-            .from('fichas')
-            .insert([registro])
-            .select()
-            .single();
-
+            .from('fichas').insert([registro]).select().single();
         if (insertError) throw new Error(insertError.message);
 
-        // 3. Notificación realtime al coordinador (insertar en tabla 'notificaciones')
         await supabaseClient.from('notificaciones').insert([{
-            tipo:    'nuevo_registro',
+            tipo: 'nuevo_registro',
             mensaje: `Nuevo estudiante: ${registro.apellido_nombre} — ${registro.carrera}`,
-            ci:      registro.ci,
+            ci: registro.ci,
             ficha_id: insertData?.id || null,
-            leido:   false,
+            leido: false,
             creado_en: new Date().toISOString()
         }]);
 
-        // 4. Mostrar resultado
-        mostrarResultado({ ...registro, foto: fotoBase64 });
-        document.getElementById('successBanner').classList.add('show');
-        showToast('¡Registro enviado al coordinador!', 'success', 4000);
+        // ── MOSTRAR SOLO "Respuesta completada" ──
+        document.getElementById('formContainer').style.display = 'none';
+        document.getElementById('completadoScreen').classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (err) {
         console.error('Error al registrar:', err);
@@ -683,46 +640,7 @@ async function confirmarRegistro() {
     }
 }
 
-// ============================================================
-// MOSTRAR RESULTADO
-// ============================================================
-function mostrarResultado(data) {
-    document.getElementById('resultFoto').src        = data.foto || data.foto_url;
-    document.getElementById('resultNombre').textContent  = data.apellido_nombre;
-    document.getElementById('resultCI').textContent      = 'C.I.: ' + data.ci;
-    document.getElementById('resultCarrera').textContent = data.carrera;
-
-    document.getElementById('resCI').textContent          = data.ci;
-    document.getElementById('resFechaNac').textContent    = formatDate(data.fecha_nacimiento);
-    document.getElementById('resEdad').textContent        = data.edad;
-    document.getElementById('resSexo').textContent        = data.sexo;
-    document.getElementById('resNacionalidad').textContent = data.nacionalidad;
-    document.getElementById('resCiudad').textContent      = data.ciudad;
-    document.getElementById('resDepartamento').textContent = data.departamento;
-    document.getElementById('resCelular').textContent     = data.celular;
-    document.getElementById('resEmail').textContent       = data.email_personal;
-    document.getElementById('resCarrera').textContent     = data.carrera;
-    document.getElementById('resCohorte').textContent     = data.cohorte;
-    document.getElementById('resTurno').textContent       = data.turno;
-
-    document.querySelectorAll('.form-step').forEach(s => s.style.display = 'none');
-    document.querySelector('.progress-bar').style.display = 'none';
-    document.getElementById('resultCard').classList.add('show');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
-}
-
-function nuevaFicha() { location.reload(); }
-function imprimirFicha() { window.print(); }
-
-// ============================================================
-// LIMPIAR ERRORES EN TIEMPO REAL
-// ============================================================
+// ── LIMPIAR ERRORES EN TIEMPO REAL ──
 document.querySelectorAll('input, select, textarea').forEach(el => {
     el.addEventListener('input', function() {
         this.classList.remove('invalid');

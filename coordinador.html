@@ -1,307 +1,761 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Coordinador — IFDSR 2026</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <!-- ✅ Supabase SDK cargado ANTES del script -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="Styles/coordinador.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Coordinador — IFDSR 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#eef2f7;color:#1a1a2e;line-height:1.5;min-height:100vh}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(100px);background:#1a1a2e;color:#fff;padding:.8rem 1.6rem;border-radius:9999px;font-size:.88rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.3);transition:transform .4s cubic-bezier(.34,1.56,.64,1);z-index:99999;display:flex;align-items:center;gap:.5rem;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.ok{background:#0F6E56}
+#toast.err{background:#c0392b}
+
+/* ══ LOGIN ══ */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0F6E56 0%,#083d2e 100%)}
+.login-card{background:#fff;padding:2.5rem;border-radius:20px;width:90%;max-width:420px;box-shadow:0 24px 60px rgba(0,0,0,.25);text-align:center}
+.login-logo{font-size:3.5rem;margin-bottom:.75rem}
+.login-card h2{font-family:'Playfair Display',serif;color:#0F6E56;font-size:1.6rem;margin-bottom:.4rem}
+.login-card p{color:#6b7280;font-size:.9rem;margin-bottom:1.5rem}
+.login-card input{width:100%;padding:1rem;border:2px solid #d1d5db;border-radius:12px;margin-bottom:1rem;font-size:1rem;text-align:center;font-family:inherit;transition:border-color .2s}
+.login-card input:focus{outline:none;border-color:#0F6E56;box-shadow:0 0 0 4px rgba(15,110,86,.1)}
+.login-err{background:#fee2e2;color:#b91c1c;padding:.75rem;border-radius:10px;margin-bottom:1rem;display:none;font-size:.88rem}
+.login-hint{font-size:.78rem;color:#9ca3af;margin-top:1rem}
+
+/* ══ PANEL ══ */
+.panel{max-width:980px;margin:0 auto;padding:1.5rem}
+
+/* ══ HEADER ══ */
+.ph{background:linear-gradient(135deg,#0F6E56,#083d2e);color:#fff;padding:1.25rem 1.75rem;border-radius:18px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 12px 32px rgba(15,110,86,.3);margin-bottom:1.75rem}
+.ph-left{display:flex;align-items:center;gap:1rem}
+.ph-logo{width:52px;height:52px;background:#fff;border-radius:50%;padding:3px;box-shadow:0 3px 10px rgba(0,0,0,.2);flex-shrink:0}
+.ph-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.ph-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;line-height:1.2}
+.ph-sub{font-size:.82rem;opacity:.85;margin-top:.2rem}
+.ph-right{display:flex;align-items:center;gap:.75rem}
+.badge-notif{background:#e53e3e;color:#fff;font-size:.72rem;font-weight:700;padding:.25rem .7rem;border-radius:9999px;display:none;align-items:center;gap:.3rem}
+
+/* ══ TOOLBAR ══ */
+.toolbar{background:#fff;padding:1.1rem 1.4rem;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.06);display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.75rem;flex-wrap:wrap}
+.tf-group{flex:1;min-width:240px}
+.tf-group label{display:block;font-size:.72rem;font-weight:700;color:#6b7280;margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em}
+.tf-group select{width:100%;padding:.8rem 1rem;border:2px solid #e5e7eb;border-radius:11px;font-size:.92rem;background:#fff;cursor:pointer;font-family:inherit;transition:border-color .2s}
+.tf-group select:focus{border-color:#0F6E56;outline:none}
+.tf-btns{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end}
+
+/* ══ BOTONES ══ */
+.btn{padding:.7rem 1.2rem;border:none;border-radius:11px;font-weight:600;cursor:pointer;font-size:.85rem;font-family:inherit;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;white-space:nowrap}
+.btn-green{background:#0F6E56;color:#fff;box-shadow:0 4px 12px rgba(15,110,86,.3)}
+.btn-green:hover{background:#083d2e;transform:translateY(-1px)}
+.btn-blue{background:#1a73e8;color:#fff;box-shadow:0 4px 12px rgba(26,115,232,.3)}
+.btn-blue:hover{background:#1557b0;transform:translateY(-1px)}
+.btn-gold{background:linear-gradient(135deg,#c8861a,#9a6010);color:#fff;box-shadow:0 4px 12px rgba(200,134,26,.3)}
+.btn-gold:hover{background:linear-gradient(135deg,#9a6010,#7a4c0d);transform:translateY(-1px)}
+.btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.25)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+
+/* ══ SECCIÓN TÍTULO ══ */
+.sec-titulo{background:#fff;padding:.9rem 1.3rem;border-radius:13px;margin-bottom:1.25rem;border-left:5px solid #0F6E56;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;justify-content:space-between;align-items:center;display:none}
+.sec-titulo h2{font-family:'Playfair Display',serif;font-size:1rem;color:#0F6E56}
+.sec-titulo span{font-size:.82rem;color:#6b7280;font-weight:600}
+
+/* ══ VISTA SLIDER ══ */
+.slider-wrap{display:none;flex-direction:column;align-items:center;gap:1.25rem}
+
+/* Contador y flechas */
+.slider-nav{display:flex;align-items:center;gap:1rem;background:#fff;padding:.7rem 1.5rem;border-radius:50px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.arrow-btn{width:44px;height:44px;border-radius:50%;border:2px solid #0F6E56;background:#fff;color:#0F6E56;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-weight:700}
+.arrow-btn:hover:not(:disabled){background:#0F6E56;color:#fff;transform:scale(1.08)}
+.arrow-btn:disabled{opacity:.3;cursor:not-allowed}
+.slider-counter{font-size:1rem;font-weight:700;color:#1a1a2e;min-width:80px;text-align:center}
+
+/* ══ FICHA UNIVERSITARIA ══ */
+.ficha-uni{width:100%;max-width:720px;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.13);border:1px solid #e0e7ef}
+
+/* ENCABEZADO FICHA */
+.fu-head{background:linear-gradient(135deg,#0F6E56 0%,#083d2e 100%);padding:0;display:flex;position:relative;overflow:hidden}
+.fu-head::before{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:rgba(255,255,255,.06);border-radius:50%}
+.fu-head::after{content:'';position:absolute;right:40px;bottom:-80px;width:180px;height:180px;background:rgba(255,255,255,.04);border-radius:50%}
+
+.fu-foto-col{padding:1.75rem 1.5rem;display:flex;align-items:flex-start;flex-shrink:0}
+.fu-foto{width:130px;height:170px;border-radius:13px;object-fit:cover;border:4px solid rgba(255,255,255,.7);box-shadow:0 8px 24px rgba(0,0,0,.35);background:rgba(255,255,255,.15)}
+
+.fu-info-col{flex:1;padding:1.5rem 1.75rem 1.5rem 0;color:#fff;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1}
+.fu-inst{font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-bottom:.6rem}
+.fu-nombre{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:800;line-height:1.2;margin-bottom:.4rem}
+.fu-ci{font-size:.9rem;opacity:.85;margin-bottom:.6rem;font-weight:500}
+.fu-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.3rem}
+.fu-tag{background:rgba(255,255,255,.18);padding:.25rem .75rem;border-radius:9999px;font-size:.72rem;font-weight:700;letter-spacing:.04em;backdrop-filter:blur(4px)}
+.fu-tag.gold{background:rgba(200,134,26,.6)}
+
+/* CUERPO FICHA */
+.fu-body{padding:1.6rem 1.75rem}
+
+.fu-section{margin-bottom:1.5rem}
+.fu-section:last-child{margin-bottom:0}
+.fu-section-title{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#0F6E56;padding-bottom:.5rem;margin-bottom:1rem;border-bottom:2px solid #e0f2ed;display:flex;align-items:center;gap:.4rem}
+
+.fu-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.fu-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.fu-field{background:linear-gradient(135deg,#f0fdf8,#f9fafb);padding:.75rem 1rem;border-radius:11px;border-left:3px solid #0F6E56;transition:box-shadow .2s}
+.fu-field:hover{box-shadow:0 4px 12px rgba(15,110,86,.1)}
+.fu-field.full{grid-column:1/-1}
+.fu-field label{display:block;font-size:.63rem;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.06em;margin-bottom:.25rem}
+.fu-field p{font-size:.93rem;font-weight:600;color:#111827;word-break:break-word}
+
+/* ACCIONES FICHA */
+.fu-actions{padding:1.1rem 1.75rem;border-top:1px solid #f0f4f8;display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap;background:#fafcff}
+.btn-sm{padding:.5rem 1rem;border-radius:9px;font-size:.8rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:inherit;display:inline-flex;align-items:center;gap:.3rem}
+.bsm-imp{background:#f0fdf4;color:#0F6E56;border:1.5px solid #0F6E56}
+.bsm-imp:hover{background:#0F6E56;color:#fff}
+.bsm-edit{background:#eff6ff;color:#1a73e8;border:1.5px solid #1a73e8}
+.bsm-edit:hover{background:#1a73e8;color:#fff}
+.bsm-del{background:#fef2f2;color:#dc2626;border:1.5px solid #dc2626}
+.bsm-del:hover{background:#dc2626;color:#fff}
+
+/* ══ EMPTY / LOADING ══ */
+.state-box{text-align:center;padding:4rem 2rem;color:#9ca3af;background:#fff;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#0F6E56;border-radius:50%;margin:0 auto 1rem;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══ MODAL EDICIÓN ══ */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
+.mo.hidden{display:none}
+.mo-box{background:#fff;width:100%;max-width:620px;border-radius:22px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.3);animation:slideUp .3s ease;max-height:92vh;display:flex;flex-direction:column}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mo-head{background:linear-gradient(135deg,#0F6E56,#083d2e);color:#fff;padding:1.1rem 1.5rem;display:flex;justify-content:space-between;align-items:center}
+.mo-head h3{font-family:'Playfair Display',serif;font-size:1.15rem}
+.mo-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.mo-body{padding:1.4rem;overflow-y:auto;flex:1}
+.mo-foot{padding:.9rem 1.4rem;border-top:1px solid #e5e7eb;display:flex;gap:.6rem;justify-content:flex-end}
+.eg{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.ef{display:flex;flex-direction:column;gap:.28rem}
+.ef.full{grid-column:1/-1}
+.ef label{font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+.ef input,.ef select{padding:.65rem .9rem;border:2px solid #e5e7eb;border-radius:9px;font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.ef input:focus,.ef select:focus{border-color:#0F6E56;outline:none}
+.ef input[readonly]{background:#f5f5f5;cursor:not-allowed;color:#6b7280}
+
+/* ══ MODAL PDF ══ */
+.pdf-mo{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:2000;padding:1rem}
+.pdf-mo.hidden{display:none}
+.pdf-box{background:#fff;border-radius:22px;padding:2.25rem;max-width:420px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.3);animation:slideUp .3s ease}
+.pdf-box h3{font-family:'Playfair Display',serif;font-size:1.4rem;color:#0F6E56;margin-bottom:.5rem}
+.pdf-box p{font-size:.88rem;color:#6b7280;margin-bottom:1.5rem}
+.pdf-opts{display:flex;flex-direction:column;gap:.75rem}
+.pdf-opt{padding:1rem 1.25rem;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;display:flex;align-items:center;gap:.75rem;transition:all .2s}
+.pdf-opt-ind{background:linear-gradient(135deg,#0F6E56,#083d2e);color:#fff;box-shadow:0 4px 14px rgba(15,110,86,.35)}
+.pdf-opt-ind:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(15,110,86,.45)}
+.pdf-opt-all{background:linear-gradient(135deg,#1a73e8,#1557b0);color:#fff;box-shadow:0 4px 14px rgba(26,115,232,.35)}
+.pdf-opt-all:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(26,115,232,.45)}
+.pdf-opt-cancel{background:#f3f4f6;color:#4b5563;box-shadow:none}
+.pdf-opt-cancel:hover{background:#e5e7eb}
+.pdf-opt-icon{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.pdf-opt-cancel .pdf-opt-icon{background:#e5e7eb}
+.pdf-opt-text{text-align:left}
+.pdf-opt-label{font-size:.95rem;font-weight:700}
+.pdf-opt-desc{font-size:.75rem;opacity:.8;margin-top:.1rem}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:680px){
+  .ph{flex-direction:column;gap:1rem;text-align:center}.ph-left{flex-direction:column}
+  .toolbar{flex-direction:column}.tf-btns{width:100%}.tf-btns .btn{flex:1;justify-content:center}
+  .fu-head{flex-direction:column}.fu-foto-col{justify-content:center;padding-bottom:0}
+  .fu-info-col{padding:1rem 1.5rem 1.5rem;text-align:center}.fu-tags{justify-content:center}
+  .fu-grid{grid-template-columns:1fr}.fu-grid.cols3{grid-template-columns:1fr 1fr}
+  .eg{grid-template-columns:1fr}
+  .slider-nav{flex-wrap:wrap;justify-content:center}
+}
+
+/* ══ PRINT ══ */
+@media print{
+  body *{visibility:hidden}
+  #printArea,#printArea *{visibility:visible}
+  #printArea{position:fixed;inset:0;background:#fff;padding:0;z-index:99999}
+  .pf-page{page-break-after:always;padding:2.5cm 2cm;font-family:'DM Sans',sans-serif}
+  .pf-page:last-child{page-break-after:avoid}
+}
+</style>
 </head>
 <body>
+<div id="toast"></div>
 
-    <!-- Login -->
-    <div class="auth-container" id="authContainer">
-        <div class="auth-card">
-            <div class="auth-logo">🔐</div>
-            <h2>Acceso Coordinador</h2>
-            <p>Instituto de Formación Docente Santa Rosa</p>
-            <div class="auth-error" id="authError">❌ Contraseña incorrecta.</div>
-            <input type="password" id="passwordInput" placeholder="Ingrese contraseña" maxlength="20">
-            <button class="btn btn-primary" style="width: 100%;" onclick="login()">
-                Ingresar al Panel
-            </button>
-            <div class="auth-hint">¿Olvidaste la contraseña? Contacta al administrador.</div>
-        </div>
+<!-- ══ LOGIN ══ -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-logo">🏛️</div>
+    <h2>Panel Coordinador</h2>
+    <p>Instituto de Formación Docente Santa Rosa</p>
+    <div class="login-err" id="loginErr">❌ Contraseña incorrecta</div>
+    <input type="password" id="passInput" placeholder="Contraseña de acceso" maxlength="20">
+    <button class="btn btn-green" style="width:100%;justify-content:center;padding:1rem;" onclick="login()">
+      🔐 Ingresar al Panel
+    </button>
+    <div class="login-hint">¿Olvidaste la contraseña? Contactá al administrador del sistema.</div>
+  </div>
+</div>
+
+<!-- ══ PANEL ══ -->
+<div class="panel" id="panelWrap" style="display:none">
+
+  <!-- Header -->
+  <header class="ph">
+    <div class="ph-left">
+      <div class="ph-logo">
+        <img src="logo-ifd.png" alt="IFDSR" onerror="this.src='https://placehold.co/52x52/0F6E56/fff?text=IFD'">
+      </div>
+      <div>
+        <div class="ph-title">Panel Coordinador</div>
+        <div class="ph-sub">Registros Estudiantiles 2026 · IFDSR Misiones, Paraguay</div>
+      </div>
     </div>
-
-    <!-- Panel Principal -->
-    <div class="coordinator-container" id="panelContainer" style="display: none;">
-
-        <header class="panel-header">
-            <div class="header-left">
-                <div class="header-logo-circle">
-                    <img src="logo-ifd.png" alt="Logo IFDSR"
-                         onerror="this.src='https://placehold.co/55x55/0F6E56/ffffff?text=IFD'">
-                </div>
-                <div class="header-text">
-                    <h1>Panel Coordinador</h1>
-                    <p>Registros Estudiantiles 2026 · IFDSR Misiones</p>
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:1rem;">
-                <span id="badgeNuevos" style="display:none; background:#e53e3e; color:white; font-size:0.75rem; font-weight:700; padding:0.3rem 0.8rem; border-radius:9999px;">
-                    🔔 <span id="badgeCount">0</span> nuevo(s)
-                </span>
-                <button class="btn btn-outline" onclick="logout()">🚪 Salir</button>
-            </div>
-        </header>
-
-        <!-- Filtros -->
-        <div class="filter-bar">
-            <div class="filter-group">
-                <label>Carrera:</label>
-                <select id="filterCarrera" onchange="cargarRegistros()">
-                    <option value="todas">📋 Todas las carreras</option>
-                    <option value="Profesorado EEB 1.º y 2.º Ciclo">Profesorado EEB 1.º y 2.º Ciclo</option>
-                    <option value="Profesorado de Educación Física y Salud">Profesorado de Educación Física y Salud</option>
-                    <option value="Especialización en Ciencias Naturales">Especialización en Ciencias Naturales</option>
-                    <option value="Especialización en Artes — Cohorte 2025-2026">Especialización en Artes — Cohorte 2025-2026</option>
-                    <option value="Especialización en Artes — Cohorte 2026-2027">Especialización en Artes — Cohorte 2026-2027</option>
-                    <option value="Especialización en Matemáticas">Especialización en Matemáticas</option>
-                    <option value="Habilitación Pedagógica para Profesionales — Cohorte 2025-2026">Habilitación Pedagógica — Cohorte 2025-2026</option>
-                    <option value="Habilitación Pedagógica para Profesionales — Cohorte 2026-2027">Habilitación Pedagógica — Cohorte 2026-2027</option>
-                    <option value="Técnico en Gestión Educativa">Técnico en Gestión Educativa</option>
-                    <option value="Técnico Docente en Integración Pedagógica TIC">Técnico Docente en Integración Pedagógica TIC</option>
-                </select>
-            </div>
-            <button class="btn-copy-link" onclick="copiarEnlace()">
-                📋 Copiar Enlace de Inscripción
-            </button>
-        </div>
-
-        <!-- Tabla -->
-        <div class="table-container">
-            <div class="table-header">
-                <span>Foto</span>
-                <span>Estudiante</span>
-                <span>C.I.</span>
-                <span>Carrera</span>
-                <span style="text-align:right;">Acción</span>
-            </div>
-            <div id="tableBody">
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p>Cargando registros...</p>
-                </div>
-            </div>
-        </div>
-
+    <div class="ph-right">
+      <span class="badge-notif" id="badgeNotif">🔔 <span id="badgeNum">0</span> nuevo(s)</span>
+      <button class="btn btn-ghost" onclick="logout()">🚪 Salir</button>
     </div>
+  </header>
 
-    <!-- Modal Detalle -->
-    <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModal(event)">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <img id="modalFoto" class="modal-foto" src="" alt="Foto">
-                <div class="modal-info">
-                    <div class="modal-name" id="modalNombre"></div>
-                    <div class="modal-ci" id="modalCI"></div>
-                    <div class="modal-carrera" id="modalCarrera"></div>
-                </div>
-                <button class="modal-close" onclick="closeModal()">✕</button>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
-        </div>
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="tf-group">
+      <label>Seleccione una carrera</label>
+      <select id="filterCarrera" onchange="cargarRegistros()">
+        <option value="">— Seleccione una carrera —</option>
+        <option value="Profesorado EEB 1.º y 2.º Ciclo">Profesorado EEB 1.º y 2.º Ciclo</option>
+        <option value="Profesorado de Educación Física y Salud">Profesorado de Educación Física y Salud</option>
+        <option value="Especialización en Ciencias Naturales">Especialización en Ciencias Naturales</option>
+        <option value="Especialización en Artes — Cohorte 2025-2026">Especialización en Artes — Cohorte 2025-2026</option>
+        <option value="Especialización en Artes — Cohorte 2026-2027">Especialización en Artes — Cohorte 2026-2027</option>
+        <option value="Especialización en Matemáticas">Especialización en Matemáticas</option>
+        <option value="Habilitación Pedagógica para Profesionales — Cohorte 2025-2026">Habilitación Pedagógica — Cohorte 2025-2026</option>
+        <option value="Habilitación Pedagógica para Profesionales — Cohorte 2026-2027">Habilitación Pedagógica — Cohorte 2026-2027</option>
+        <option value="Técnico en Gestión Educativa">Técnico en Gestión Educativa</option>
+        <option value="Técnico Docente en Integración Pedagógica TIC">Técnico Docente en Integración Pedagógica TIC</option>
+      </select>
     </div>
+    <div class="tf-btns">
+      <button class="btn btn-green" onclick="actualizarDatos()">🔄 Actualizar</button>
+      <button class="btn btn-blue" id="btnPDFCarrera" onclick="abrirPDFModal(null)" disabled>📥 Descargar carrera</button>
+      <button class="btn btn-gold" onclick="copiarEnlace()">📋 Copiar enlace</button>
+    </div>
+  </div>
 
-    <script>
-        // ============================================================
-        // CONFIGURACIÓN
-        // ============================================================
-        const SUPABASE_URL = 'https://wazkjibgudacpvdwmggw.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_vkUugBFW0TDMYC_MNmNRaQ_NTcjns0w';
-        const PASSWORD     = 'ifdsr2026';
+  <!-- Sección título -->
+  <div class="sec-titulo" id="secTitulo">
+    <h2 id="secNombre"></h2>
+    <span id="secCount"></span>
+  </div>
 
-        // ✅ Inicializar correctamente con el SDK cargado
-        const { createClient } = window.supabase;
-        const supabaseClient   = createClient(SUPABASE_URL, SUPABASE_KEY);
+  <!-- Estado vacío -->
+  <div id="stateBox" class="state-box">
+    <div style="font-size:3rem;margin-bottom:1rem">📋</div>
+    <p style="font-size:1rem;font-weight:600">Seleccioná una carrera para ver los registros</p>
+  </div>
 
-        let allRegistros = [];
+  <!-- Slider -->
+  <div class="slider-wrap" id="sliderWrap">
+    <div class="slider-nav">
+      <button class="arrow-btn" id="btnPrev" onclick="irFicha(-1)" title="Anterior">&#8592;</button>
+      <div class="slider-counter" id="sliderCounter">1 / 1</div>
+      <button class="arrow-btn" id="btnNext" onclick="irFicha(1)" title="Siguiente">&#8594;</button>
+    </div>
+    <!-- Ficha universitaria -->
+    <div class="ficha-uni" id="fichaUni">
+      <div class="fu-head">
+        <div class="fu-foto-col">
+          <img id="fFoto" class="fu-foto" src="" alt="Foto" onerror="this.src='https://placehold.co/130x170/0F6E56/fff?text=Foto'">
+        </div>
+        <div class="fu-info-col">
+          <div class="fu-inst">Instituto de Formación Docente Santa Rosa · Misiones · Paraguay</div>
+          <div class="fu-nombre" id="fNombre"></div>
+          <div class="fu-ci" id="fCI"></div>
+          <div class="fu-tags">
+            <span class="fu-tag gold" id="fCarrera"></span>
+            <span class="fu-tag" id="fCohorte"></span>
+            <span class="fu-tag" id="fTurno"></span>
+          </div>
+        </div>
+      </div>
+      <div class="fu-body">
+        <!-- Datos personales -->
+        <div class="fu-section">
+          <div class="fu-section-title">👤 Datos Personales</div>
+          <div class="fu-grid">
+            <div class="fu-field"><label>Fecha de Nacimiento</label><p id="fFechaNac"></p></div>
+            <div class="fu-field"><label>Edad</label><p id="fEdad"></p></div>
+            <div class="fu-field"><label>Sexo</label><p id="fSexo"></p></div>
+            <div class="fu-field"><label>Nacionalidad</label><p id="fNacionalidad"></p></div>
+            <div class="fu-field"><label>Ciudad / Distrito</label><p id="fCiudad"></p></div>
+            <div class="fu-field"><label>Departamento</label><p id="fDepartamento"></p></div>
+            <div class="fu-field"><label>Celular</label><p id="fCelular"></p></div>
+            <div class="fu-field"><label>Correo Electrónico</label><p id="fEmail"></p></div>
+          </div>
+        </div>
+        <!-- Datos académicos -->
+        <div class="fu-section">
+          <div class="fu-section-title">🎓 Datos Académicos</div>
+          <div class="fu-grid cols3">
+            <div class="fu-field full"><label>Carrera</label><p id="fCarreraD"></p></div>
+            <div class="fu-field"><label>Cohorte</label><p id="fCohorteD"></p></div>
+            <div class="fu-field"><label>Turno</label><p id="fTurnoD"></p></div>
+            <div class="fu-field"><label>Fecha de Registro</label><p id="fRegistro"></p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fu-actions">
+        <button class="btn-sm bsm-imp" onclick="abrirPDFModal('individual')">📄 PDF Individual</button>
+        <button class="btn-sm bsm-edit" onclick="abrirEdicion()">✏️ Editar</button>
+        <button class="btn-sm bsm-del" onclick="eliminarActual()">🗑️ Eliminar</button>
+      </div>
+    </div>
+  </div>
 
-        // ============================================================
-        // LOGIN
-        // ============================================================
-        function login() {
-            if (document.getElementById('passwordInput').value === PASSWORD) {
-                document.getElementById('authContainer').style.display = 'none';
-                document.getElementById('panelContainer').style.display = 'block';
-                cargarRegistros();
-                escucharNuevos(); // ✅ Realtime: notificaciones nuevas
-            } else {
-                const err = document.getElementById('authError');
-                err.style.display = 'block';
-                setTimeout(() => err.style.display = 'none', 3000);
-            }
-        }
+</div><!-- /panel -->
 
-        function logout() { location.reload(); }
+<!-- ══ MODAL EDICIÓN ══ -->
+<div class="mo hidden" id="moEdicion">
+  <div class="mo-box">
+    <div class="mo-head">
+      <h3>✏️ Editar Ficha</h3>
+      <button class="mo-close" onclick="cerrarEdicion()">✕</button>
+    </div>
+    <div class="mo-body">
+      <div class="eg">
+        <div class="ef full"><label>Apellido y nombre completo</label><input type="text" id="eNom"></div>
+        <div class="ef"><label>C.I.</label><input type="text" id="eCI"></div>
+        <div class="ef"><label>Fecha de Nacimiento</label><input type="date" id="eFecha" onchange="edadAuto()"></div>
+        <div class="ef"><label>Edad (automática)</label><input type="number" id="eEdad" readonly></div>
+        <div class="ef"><label>Sexo</label><select id="eSexo"><option value="Femenino">Femenino</option><option value="Masculino">Masculino</option></select></div>
+        <div class="ef"><label>Nacionalidad</label><input type="text" id="eNac"></div>
+        <div class="ef"><label>Ciudad</label><input type="text" id="eCiu"></div>
+        <div class="ef"><label>Departamento</label>
+          <select id="eDep">
+            <option>Alto Paraná</option><option>Amambay</option><option>Boquerón</option>
+            <option>Caaguazú</option><option>Caazapá</option><option>Canindeyú</option>
+            <option>Capital (Asunción)</option><option>Concepción</option><option>Cordillera</option>
+            <option>Guairá</option><option>Itapúa</option><option>Misiones</option>
+            <option>Ñeembucú</option><option>Paraguarí</option><option>Presidente Hayes</option>
+            <option>San Pedro</option>
+          </select>
+        </div>
+        <div class="ef"><label>Celular</label><input type="text" id="eCel"></div>
+        <div class="ef"><label>Email personal</label><input type="email" id="eEmail"></div>
+        <div class="ef full"><label>Carrera</label>
+          <select id="eCar">
+            <option value="Profesorado EEB 1.º y 2.º Ciclo">Profesorado EEB 1.º y 2.º Ciclo</option>
+            <option value="Profesorado de Educación Física y Salud">Profesorado de Educación Física y Salud</option>
+            <option value="Especialización en Ciencias Naturales">Especialización en Ciencias Naturales</option>
+            <option value="Especialización en Artes — Cohorte 2025-2026">Especialización en Artes — Cohorte 2025-2026</option>
+            <option value="Especialización en Artes — Cohorte 2026-2027">Especialización en Artes — Cohorte 2026-2027</option>
+            <option value="Especialización en Matemáticas">Especialización en Matemáticas</option>
+            <option value="Habilitación Pedagógica para Profesionales — Cohorte 2025-2026">Habilitación Pedagógica — Cohorte 2025-2026</option>
+            <option value="Habilitación Pedagógica para Profesionales — Cohorte 2026-2027">Habilitación Pedagógica — Cohorte 2026-2027</option>
+            <option value="Técnico en Gestión Educativa">Técnico en Gestión Educativa</option>
+            <option value="Técnico Docente en Integración Pedagógica TIC">Técnico Docente en Integración Pedagógica TIC</option>
+          </select>
+        </div>
+        <div class="ef"><label>Cohorte</label><select id="eCoh"><option value="2025-2026">2025-2026</option><option value="2026-2027">2026-2027</option></select></div>
+        <div class="ef"><label>Turno</label><select id="eTur"><option value="Tarde">Tarde</option><option value="Noche">Noche</option><option value="Tarde/Noche">Tarde/Noche</option></select></div>
+      </div>
+    </div>
+    <div class="mo-foot">
+      <button class="btn btn-gold" onclick="cerrarEdicion()">Cancelar</button>
+      <button class="btn btn-green" onclick="guardarEdicion()">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
 
-        document.getElementById('passwordInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') login();
-        });
+<!-- ══ MODAL PDF ══ -->
+<div class="pdf-mo hidden" id="pdfMo">
+  <div class="pdf-box">
+    <h3>📥 Descargar PDF</h3>
+    <p id="pdfMoDesc">¿Qué querés descargar?</p>
+    <div class="pdf-opts">
+      <button class="pdf-opt pdf-opt-ind" id="btnPDFInd" onclick="descargarPDFIndividual()">
+        <div class="pdf-opt-icon">📄</div>
+        <div class="pdf-opt-text">
+          <div class="pdf-opt-label">PDF Individual</div>
+          <div class="pdf-opt-desc">Ficha del estudiante seleccionado</div>
+        </div>
+      </button>
+      <button class="pdf-opt pdf-opt-all" onclick="descargarPDFCompleto()">
+        <div class="pdf-opt-icon">📚</div>
+        <div class="pdf-opt-text">
+          <div class="pdf-opt-label">PDF Completo de la carrera</div>
+          <div class="pdf-opt-desc">Todas las fichas de la carrera seleccionada</div>
+        </div>
+      </button>
+      <button class="pdf-opt pdf-opt-cancel" onclick="cerrarPDFModal()">
+        <div class="pdf-opt-icon">✕</div>
+        <div class="pdf-opt-text">
+          <div class="pdf-opt-label">Cancelar</div>
+          <div class="pdf-opt-desc">Volver al panel</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
 
-        // ============================================================
-        // CARGAR REGISTROS — tabla 'fichas', columnas correctas
-        // ============================================================
-        async function cargarRegistros() {
-            const carrera = document.getElementById('filterCarrera').value;
-            const tbody   = document.getElementById('tableBody');
-            tbody.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Cargando registros...</p></div>';
+<!-- Área de impresión -->
+<div id="printArea" style="display:none"></div>
 
-            try {
-                let query = supabaseClient
-                    .from('fichas')          // ✅ tabla correcta
-                    .select('*')
-                    .order('registrado_en', { ascending: false });
+<script>
+// ══ CONFIG ══
+const SUPA_URL = 'https://wazkjibgudacpvdwmggw.supabase.co';
+const SUPA_KEY = 'sb_publishable_vkUugBFW0TDMYC_MNmNRaQ_NTcjns0w';
+const PASS     = 'ifdsr2026';
 
-                if (carrera !== 'todas') {
-                    query = query.eq('carrera', carrera);
-                }
+const { createClient } = window.supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
 
-                const { data, error } = await query;
-                if (error) throw error;
+let registros = [];
+let fichaIdx  = 0;  // ficha actual en el slider
+let pdfModoIndividual = true; // para saber qué descargar
 
-                allRegistros = data || [];
-                renderizarTabla();
+// ══ TOAST ══
+function toast(msg, tipo='', ms=3000){
+  const t=document.getElementById('toast');
+  t.className=tipo==='ok'?'show ok':tipo==='err'?'show err':'show';
+  t.innerHTML=(tipo==='ok'?'✓':tipo==='err'?'✕':'ℹ')+' '+msg;
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.className='',ms);
+}
 
-            } catch (err) {
-                console.error(err);
-                tbody.innerHTML = `<div class="error-state">Error al cargar: ${err.message}</div>`;
-            }
-        }
+// ══ LOGIN ══
+function login(){
+  const v=document.getElementById('passInput').value;
+  if(v===PASS){
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('panelWrap').style.display='block';
+    escucharNuevos();
+  } else {
+    const e=document.getElementById('loginErr');
+    e.style.display='block';
+    setTimeout(()=>e.style.display='none',3000);
+  }
+}
+function logout(){location.reload()}
+document.getElementById('passInput').addEventListener('keypress',e=>{if(e.key==='Enter')login()});
 
-        // ============================================================
-        // RENDERIZAR TABLA
-        // ============================================================
-        function renderizarTabla() {
-            const tbody = document.getElementById('tableBody');
+// ══ CARGAR ══
+async function cargarRegistros(){
+  const car=document.getElementById('filterCarrera').value;
+  const sb=document.getElementById('stateBox');
+  const sw=document.getElementById('sliderWrap');
+  const st=document.getElementById('secTitulo');
+  const btn=document.getElementById('btnPDFCarrera');
 
-            if (allRegistros.length === 0) {
-                tbody.innerHTML = '<div class="empty-state">No hay estudiantes registrados en esta selección.</div>';
-                return;
-            }
+  if(!car){
+    sb.style.display='block'; sw.style.display='none'; st.style.display='none';
+    btn.disabled=true; registros=[]; return;
+  }
 
-            tbody.innerHTML = allRegistros.map(reg => {
-                // ✅ Nombres de columnas correctos (snake_case)
-                const foto = reg.foto_url || 'https://placehold.co/50x67?text=Foto';
-                return `
-                    <div class="table-row">
-                        <img src="${foto}" alt="Foto" class="student-foto"
-                             onerror="this.src='https://placehold.co/50x67?text=Foto'">
-                        <div>
-                            <div class="student-name">${reg.apellido_nombre || '—'}</div>
-                            <div class="student-email">${reg.email_personal || '—'}</div>
-                        </div>
-                        <div>${reg.ci || '—'}</div>
-                        <div>${reg.carrera || '—'}</div>
-                        <div style="text-align:right;">
-                            <button class="btn-sm" onclick="verDetalle(${reg.id})">Ver Detalle</button>
-                        </div>
-                    </div>`;
-            }).join('');
-        }
+  sb.innerHTML='<div class="spinner"></div><p>Cargando registros...</p>';
+  sb.style.display='block'; sw.style.display='none';
 
-        // ============================================================
-        // VER DETALLE
-        // ============================================================
-        function verDetalle(id) {
-            const reg = allRegistros.find(r => r.id === id);
-            if (!reg) return;
+  try{
+    const {data,error}=await db.from('fichas').select('*').eq('carrera',car).order('apellido_nombre',{ascending:true});
+    if(error) throw error;
+    registros=data||[];
+    fichaIdx=0;
+    btn.disabled=(registros.length===0);
+    document.getElementById('secNombre').textContent=car;
+    document.getElementById('secCount').textContent=registros.length+' estudiante(s)';
+    st.style.display='flex';
 
-            document.getElementById('modalFoto').src        = reg.foto_url || 'https://placehold.co/80x105?text=Foto';
-            document.getElementById('modalNombre').textContent = reg.apellido_nombre;
-            document.getElementById('modalCI').textContent     = 'C.I.: ' + reg.ci;
-            document.getElementById('modalCarrera').textContent = reg.carrera;
+    if(registros.length===0){
+      sb.innerHTML='<div style="font-size:2.5rem;margin-bottom:1rem">👤</div><p style="font-size:1rem;font-weight:600">No hay estudiantes en esta carrera</p>';
+      sw.style.display='none';
+    } else {
+      sb.style.display='none';
+      sw.style.display='flex';
+      mostrarFicha(fichaIdx);
+    }
+  }catch(err){
+    sb.innerHTML='<p style="color:#dc2626">Error: '+err.message+'</p>';
+  }
+}
 
-            const fechaReg = reg.registrado_en
-                ? new Date(reg.registrado_en).toLocaleString('es-PY')
-                : '—';
+async function actualizarDatos(){
+  toast('Actualizando...','',1500);
+  await cargarRegistros();
+  toast('Datos actualizados ✓','ok');
+}
 
-            document.getElementById('modalBody').innerHTML = `
-                <div class="modal-section-title">👤 Datos Personales</div>
-                <div class="modal-grid">
-                    <div class="modal-field"><label>Fecha Nac.</label><p>${formatDate(reg.fecha_nacimiento)}</p></div>
-                    <div class="modal-field"><label>Edad</label><p>${reg.edad ?? '—'}</p></div>
-                    <div class="modal-field"><label>Sexo</label><p>${reg.sexo || '—'}</p></div>
-                    <div class="modal-field"><label>Nacionalidad</label><p>${reg.nacionalidad || '—'}</p></div>
-                    <div class="modal-field"><label>Ciudad</label><p>${reg.ciudad || '—'}</p></div>
-                    <div class="modal-field"><label>Departamento</label><p>${reg.departamento || '—'}</p></div>
-                    <div class="modal-field"><label>Celular</label><p>${reg.celular || '—'}</p></div>
-                    <div class="modal-field"><label>Email</label><p>${reg.email_personal || '—'}</p></div>
-                    ${reg.email_institucional ? `<div class="modal-field"><label>Email Institucional</label><p>${reg.email_institucional}</p></div>` : ''}
-                </div>
+// ══ SLIDER ══
+function irFicha(dir){
+  fichaIdx = Math.max(0, Math.min(registros.length-1, fichaIdx+dir));
+  mostrarFicha(fichaIdx);
+}
 
-                <div class="modal-section-title">🎓 Datos Académicos</div>
-                <div class="modal-grid">
-                    <div class="modal-field"><label>Carrera</label><p>${reg.carrera || '—'}</p></div>
-                    <div class="modal-field"><label>Cohorte</label><p>${reg.cohorte || '—'}</p></div>
-                    <div class="modal-field"><label>Turno</label><p>${reg.turno || '—'}</p></div>
-                </div>
+function mostrarFicha(i){
+  const reg=registros[i];
+  if(!reg) return;
 
-                <div class="modal-section-title">📅 Registro</div>
-                <div class="modal-grid">
-                    <div class="modal-field"><label>Fecha y hora</label><p>${fechaReg}</p></div>
-                </div>
-            `;
+  // Foto
+  document.getElementById('fFoto').src=reg.foto_url||'https://placehold.co/130x170/0F6E56/fff?text=Foto';
+  // Header
+  document.getElementById('fNombre').textContent=reg.apellido_nombre||'—';
+  document.getElementById('fCI').textContent='C.I.: '+(reg.ci||'—');
+  document.getElementById('fCarrera').textContent=abrevCarrera(reg.carrera);
+  document.getElementById('fCohorte').textContent='Cohorte '+(reg.cohorte||'—');
+  document.getElementById('fTurno').textContent='Turno '+(reg.turno||'—');
+  // Personales
+  document.getElementById('fFechaNac').textContent=fmtDate(reg.fecha_nacimiento);
+  document.getElementById('fEdad').textContent=(reg.edad??'—')+' años';
+  document.getElementById('fSexo').textContent=reg.sexo||'—';
+  document.getElementById('fNacionalidad').textContent=reg.nacionalidad||'—';
+  document.getElementById('fCiudad').textContent=reg.ciudad||'—';
+  document.getElementById('fDepartamento').textContent=reg.departamento||'—';
+  document.getElementById('fCelular').textContent=reg.celular||'—';
+  document.getElementById('fEmail').textContent=reg.email_personal||'—';
+  // Académicos
+  document.getElementById('fCarreraD').textContent=reg.carrera||'—';
+  document.getElementById('fCohorteD').textContent=reg.cohorte||'—';
+  document.getElementById('fTurnoD').textContent=reg.turno||'—';
+  document.getElementById('fRegistro').textContent=reg.registrado_en?new Date(reg.registrado_en).toLocaleDateString('es-PY'):'—';
+  // Contador
+  document.getElementById('sliderCounter').textContent=(i+1)+' / '+registros.length;
+  document.getElementById('btnPrev').disabled=(i===0);
+  document.getElementById('btnNext').disabled=(i===registros.length-1);
+}
 
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
+function abrevCarrera(c){
+  if(!c) return '—';
+  if(c.length<=30) return c;
+  return c.substring(0,28)+'…';
+}
 
-        function closeModal(event) {
-            if (!event || event.target === document.getElementById('modalOverlay')) {
-                document.getElementById('modalOverlay').classList.add('hidden');
-            }
-        }
+// ══ EDICIÓN ══
+function edadAuto(){
+  const v=document.getElementById('eFecha').value;
+  if(!v){document.getElementById('eEdad').value='';return}
+  const hoy=new Date(), nac=new Date(v);
+  let edad=hoy.getFullYear()-nac.getFullYear();
+  const m=hoy.getMonth()-nac.getMonth();
+  if(m<0||(m===0&&hoy.getDate()<nac.getDate())) edad--;
+  document.getElementById('eEdad').value=edad>0?edad:'';
+}
 
-        // ============================================================
-        // REALTIME — notificaciones nuevas en tiempo real
-        // ============================================================
-        function escucharNuevos() {
-            supabaseClient
-                .channel('nuevos-registros')
-                .on('postgres_changes', {
-                    event:  'INSERT',
-                    schema: 'public',
-                    table:  'fichas'
-                }, payload => {
-                    // Agregar al tope de la lista sin recargar
-                    allRegistros.unshift(payload.new);
-                    renderizarTabla();
+function abrirEdicion(){
+  const reg=registros[fichaIdx]; if(!reg) return;
+  document.getElementById('eNom').value=reg.apellido_nombre||'';
+  document.getElementById('eCI').value=reg.ci||'';
+  document.getElementById('eFecha').value=reg.fecha_nacimiento||'';
+  document.getElementById('eEdad').value=reg.edad||'';
+  document.getElementById('eSexo').value=reg.sexo||'Femenino';
+  document.getElementById('eNac').value=reg.nacionalidad||'';
+  document.getElementById('eCiu').value=reg.ciudad||'';
+  document.getElementById('eDep').value=reg.departamento||'Misiones';
+  document.getElementById('eCel').value=reg.celular||'';
+  document.getElementById('eEmail').value=reg.email_personal||'';
+  document.getElementById('eCar').value=reg.carrera||'';
+  document.getElementById('eCoh').value=reg.cohorte||'2026-2027';
+  document.getElementById('eTur').value=reg.turno||'Tarde';
+  document.getElementById('moEdicion').classList.remove('hidden');
+}
+function cerrarEdicion(){document.getElementById('moEdicion').classList.add('hidden')}
 
-                    // Mostrar badge
-                    const badge = document.getElementById('badgeNuevos');
-                    const count = document.getElementById('badgeCount');
-                    const actual = parseInt(count.textContent) || 0;
-                    count.textContent = actual + 1;
-                    badge.style.display = 'inline-flex';
+async function guardarEdicion(){
+  const reg=registros[fichaIdx]; if(!reg) return;
+  const upd={
+    apellido_nombre:document.getElementById('eNom').value.trim(),
+    ci:document.getElementById('eCI').value.trim(),
+    fecha_nacimiento:document.getElementById('eFecha').value,
+    edad:parseInt(document.getElementById('eEdad').value)||null,
+    sexo:document.getElementById('eSexo').value,
+    nacionalidad:document.getElementById('eNac').value.trim(),
+    ciudad:document.getElementById('eCiu').value.trim(),
+    departamento:document.getElementById('eDep').value,
+    celular:document.getElementById('eCel').value.trim(),
+    email_personal:document.getElementById('eEmail').value.trim(),
+    carrera:document.getElementById('eCar').value,
+    cohorte:document.getElementById('eCoh').value,
+    turno:document.getElementById('eTur').value,
+  };
+  try{
+    const {error}=await db.from('fichas').update(upd).eq('id',reg.id);
+    if(error) throw error;
+    registros[fichaIdx]={...reg,...upd};
+    mostrarFicha(fichaIdx);
+    cerrarEdicion();
+    toast('Ficha actualizada correctamente ✓','ok');
+  }catch(err){toast('Error: '+err.message,'err',5000)}
+}
 
-                    // Sonido/vibración si está disponible
-                    if (navigator.vibrate) navigator.vibrate(200);
-                })
-                .subscribe();
-        }
+// ══ ELIMINAR ══
+async function eliminarActual(){
+  const reg=registros[fichaIdx]; if(!reg) return;
+  if(!confirm('¿Eliminar la ficha de "'+reg.apellido_nombre+'"?\n\nEsta acción no se puede deshacer.')) return;
+  try{
+    const {error}=await db.from('fichas').delete().eq('id',reg.id);
+    if(error) throw error;
+    registros.splice(fichaIdx,1);
+    document.getElementById('secCount').textContent=registros.length+' estudiante(s)';
+    document.getElementById('btnPDFCarrera').disabled=(registros.length===0);
+    if(registros.length===0){
+      document.getElementById('sliderWrap').style.display='none';
+      document.getElementById('stateBox').innerHTML='<div style="font-size:2.5rem;margin-bottom:1rem">👤</div><p style="font-size:1rem;font-weight:600">No hay más estudiantes en esta carrera</p>';
+      document.getElementById('stateBox').style.display='block';
+    } else {
+      fichaIdx=Math.min(fichaIdx,registros.length-1);
+      mostrarFicha(fichaIdx);
+    }
+    toast('Ficha eliminada ✓','ok');
+  }catch(err){toast('Error: '+err.message,'err',5000)}
+}
 
-        // ============================================================
-        // COPIAR ENLACE
-        // ============================================================
-        function copiarEnlace() {
-            const url = 'https://ficha-i-f-d.vercel.app/index.html';
-            navigator.clipboard.writeText(url).then(() => {
-                alert('✅ Enlace copiado:\n\n' + url);
-            }).catch(() => {
-                prompt('Copia este enlace:', url);
-            });
-        }
+// ══ MODAL PDF ══
+let pdfParaIndividual=false;
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '—';
-            const [year, month, day] = dateStr.split('-');
-            return `${day}/${month}/${year}`;
-        }
-    </script>
+function abrirPDFModal(modo){
+  // modo='individual' => solo individual; null => ambas opciones
+  pdfParaIndividual=(modo==='individual');
+  const ind=document.getElementById('btnPDFInd');
+  if(pdfParaIndividual){
+    document.getElementById('pdfMoDesc').textContent='Elegí el formato de descarga:';
+    ind.style.display='flex';
+  } else {
+    document.getElementById('pdfMoDesc').textContent='¿Qué querés descargar?';
+    ind.style.display='flex';
+  }
+  document.getElementById('pdfMo').classList.remove('hidden');
+}
+function cerrarPDFModal(){document.getElementById('pdfMo').classList.add('hidden')}
+
+// ══ GENERAR PÁGINA FICHA PARA PRINT ══
+function htmlPagFicha(reg){
+  const foto=reg.foto_url||'https://placehold.co/130x170/0F6E56/fff?text=Foto';
+  const regDate=reg.registrado_en?new Date(reg.registrado_en).toLocaleDateString('es-PY'):'—';
+  return `
+<div class="pf-page" style="min-height:100vh;background:#fff;font-family:DM Sans,system-ui,sans-serif">
+  <!-- ENCABEZADO -->
+  <div style="background:linear-gradient(135deg,#0F6E56,#083d2e);color:#fff;padding:2rem;display:flex;gap:1.5rem;align-items:flex-start;border-radius:12px;margin-bottom:2rem">
+    <img src="${foto}" style="width:130px;height:170px;border-radius:12px;object-fit:cover;border:4px solid rgba(255,255,255,.65);box-shadow:0 8px 20px rgba(0,0,0,.35);flex-shrink:0" onerror="this.src='https://placehold.co/130x170/ccc/fff?text=Foto'">
+    <div style="flex:1">
+      <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.7;margin-bottom:8px">Instituto de Formación Docente Santa Rosa · Misiones · Paraguay</div>
+      <div style="font-size:26px;font-weight:800;line-height:1.2;margin-bottom:6px">${reg.apellido_nombre||'—'}</div>
+      <div style="font-size:13px;opacity:.85;margin-bottom:10px">C.I.: ${reg.ci||'—'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span style="background:rgba(255,255,255,.2);padding:4px 12px;border-radius:9999px;font-size:11px;font-weight:700">${reg.carrera||'—'}</span>
+        <span style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:9999px;font-size:11px;font-weight:700">Cohorte ${reg.cohorte||'—'}</span>
+        <span style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:9999px;font-size:11px;font-weight:700">Turno ${reg.turno||'—'}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATOS PERSONALES -->
+  <div style="margin-bottom:1.5rem">
+    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#0F6E56;border-bottom:2px solid #cce9e0;padding-bottom:6px;margin-bottom:12px">👤 Datos Personales</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${cpPrint('Fecha de Nacimiento',fmtDate(reg.fecha_nacimiento))}
+      ${cpPrint('Edad',(reg.edad??'—')+' años')}
+      ${cpPrint('Sexo',reg.sexo)}
+      ${cpPrint('Nacionalidad',reg.nacionalidad)}
+      ${cpPrint('Ciudad / Distrito',reg.ciudad)}
+      ${cpPrint('Departamento',reg.departamento)}
+      ${cpPrint('Celular',reg.celular)}
+      ${cpPrint('Correo Electrónico',reg.email_personal)}
+    </div>
+  </div>
+
+  <!-- DATOS ACADÉMICOS -->
+  <div style="margin-bottom:2rem">
+    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#0F6E56;border-bottom:2px solid #cce9e0;padding-bottom:6px;margin-bottom:12px">🎓 Datos Académicos</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div style="grid-column:1/-1">${cpPrint('Carrera',reg.carrera)}</div>
+      ${cpPrint('Cohorte',reg.cohorte)}
+      ${cpPrint('Turno',reg.turno)}
+      ${cpPrint('Fecha de Registro',regDate)}
+    </div>
+  </div>
+
+  <!-- PIE -->
+  <div style="text-align:center;font-size:9px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px">
+    Instituto de Formación Docente Santa Rosa · Misiones, Paraguay · Registro 2026 · Documento oficial
+  </div>
+</div>`;
+}
+
+function cpPrint(label,valor){
+  return `<div style="background:linear-gradient(135deg,#f0fdf8,#f9fafb);padding:10px 12px;border-radius:10px;border-left:3px solid #0F6E56">
+    <div style="font-size:8px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.8px;margin-bottom:3px">${label}</div>
+    <div style="font-size:13px;font-weight:700;color:#111827">${valor||'—'}</div>
+  </div>`;
+}
+
+// ══ DESCARGAR PDF INDIVIDUAL (window.print) ══
+function descargarPDFIndividual(){
+  cerrarPDFModal();
+  const reg=registros[fichaIdx];
+  if(!reg){toast('No hay ficha seleccionada','err');return}
+  const pa=document.getElementById('printArea');
+  pa.innerHTML=`<style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap');
+  @page{size:A4;margin:1.5cm} body{margin:0;font-family:'DM Sans',sans-serif}
+  @media print{body *{visibility:hidden}#printArea,#printArea *{visibility:visible}#printArea{position:fixed;inset:0;background:#fff}}
+  </style>${htmlPagFicha(reg)}`;
+  pa.style.display='block';
+  setTimeout(()=>{window.print();pa.style.display='none';pa.innerHTML=''},400);
+}
+
+// ══ DESCARGAR PDF COMPLETO ══
+function descargarPDFCompleto(){
+  cerrarPDFModal();
+  if(registros.length===0){toast('No hay fichas para descargar','err');return}
+  const pa=document.getElementById('printArea');
+  pa.innerHTML=`<style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap');
+  @page{size:A4;margin:1.5cm} body{margin:0;font-family:'DM Sans',sans-serif}
+  @media print{body *{visibility:hidden}#printArea,#printArea *{visibility:visible}#printArea{position:fixed;inset:0;background:#fff}}
+  .pf-page{page-break-after:always}.pf-page:last-child{page-break-after:avoid}
+  </style>`+registros.map(r=>htmlPagFicha(r)).join('');
+  pa.style.display='block';
+  setTimeout(()=>{window.print();pa.style.display='none';pa.innerHTML=''},400);
+}
+
+// ══ REALTIME ══
+function escucharNuevos(){
+  db.channel('realtime-fichas')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'fichas'},payload=>{
+      const car=document.getElementById('filterCarrera').value;
+      if(car && payload.new.carrera===car){
+        registros.push(payload.new);
+        registros.sort((a,b)=>(a.apellido_nombre||'').localeCompare(b.apellido_nombre||''));
+        document.getElementById('secCount').textContent=registros.length+' estudiante(s)';
+        document.getElementById('sliderWrap').style.display='flex';
+        document.getElementById('stateBox').style.display='none';
+        document.getElementById('btnPDFCarrera').disabled=false;
+        mostrarFicha(fichaIdx);
+      }
+      const bn=document.getElementById('badgeNotif');
+      const bc=document.getElementById('badgeNum');
+      bc.textContent=(parseInt(bc.textContent)||0)+1;
+      bn.style.display='inline-flex';
+      toast('¡Nuevo estudiante registrado!','ok',4000);
+      if(navigator.vibrate) navigator.vibrate(200);
+    }).subscribe();
+}
+
+// ══ COPIAR ENLACE ══
+function copiarEnlace(){
+  const url='https://ficha-i-f-d.vercel.app/index.html';
+  navigator.clipboard.writeText(url).then(()=>toast('Enlace copiado ✓','ok')).catch(()=>prompt('Copia este enlace:',url));
+}
+
+// ══ UTILS ══
+function fmtDate(d){
+  if(!d) return '—';
+  const [y,m,day]=d.split('-');
+  return `${day}/${m}/${y}`;
+}
+</script>
 </body>
 </html>
