@@ -484,19 +484,15 @@ async function cargarRegistros(){
 }
 
 async function actualizarDatos(){
-  // Guardar el CI del registro actual para volver a él después de recargar
-  const ciActual = registros[fichaIdx] ? registros[fichaIdx].ci : null;
-  toast('Actualizando...','',1500);
-  await cargarRegistros();
-  // Intentar posicionarse en el mismo estudiante que estaba
-  if(ciActual && registros.length > 0){
-    const nuevoIdx = registros.findIndex(r => r.ci === ciActual);
-    if(nuevoIdx >= 0){
-      fichaIdx = nuevoIdx;
-      mostrarFicha(fichaIdx);
-    }
+  // Actualizar = refrescar la VISTA con los datos ya en memoria
+  // NO recarga de la DB para no perder ediciones/eliminaciones locales
+  if(registros.length > 0){
+    mostrarFicha(fichaIdx);
+    toast('Vista actualizada ✓','ok');
+  } else {
+    // Solo si no hay nada cargado, ir a buscar de la DB
+    await cargarRegistros();
   }
-  if(registros.length > 0) toast('Datos actualizados ✓','ok');
 }
 
 // ══════════ SLIDER ══════════
@@ -509,11 +505,16 @@ function mostrarFicha(i){
   const r = registros[i];
   if(!r) return;
 
-  // Foto — forzar recarga limpia para evitar caché de src anterior
+  // Foto — limpiar y recargar
   const fotoEl = document.getElementById('fFoto');
-  fotoEl.src = 'https://placehold.co/190x240/083d2e/e8f5f0?text=Sin+Foto';
+  fotoEl.onerror = function(){ 
+    this.onerror = null;
+    this.src = 'https://placehold.co/190x240/083d2e/e8f5f0?text=Sin+Foto';
+  };
   if(r.foto_url && r.foto_url.trim() !== ''){
-    fotoEl.src = r.foto_url; // Cargar directo — base64 o URL pública de Supabase
+    fotoEl.src = r.foto_url;
+  } else {
+    fotoEl.src = 'https://placehold.co/190x240/083d2e/e8f5f0?text=Sin+Foto';
   }
 
   // Header tags
@@ -596,17 +597,28 @@ async function guardarEdicion(){
     turno:           document.getElementById('eTur').value,
   };
   try{
-    const {error} = await db.from('fichas').update(upd).eq('id', r.id);
-    if(error) throw error;
-    // ✅ Guardar en memoria local Y en el mapa de ediciones para sobrevivir recargas
-    const registroActualizado = Object.assign({}, r, upd);
-    registros[fichaIdx] = registroActualizado;
-    editadosLocales.set(r.id, upd); // persiste aunque se recargue de DB
+    const {data: rows, error} = await db
+      .from('fichas').update(upd).eq('id', r.id).select();
+
+    console.log('UPDATE resultado:', rows, 'error:', error, 'id:', r.id);
+
+    if(error) throw new Error(error.message + ' (code: ' + error.code + ')');
+
+    if(!rows || rows.length === 0){
+      alert('⚠️ PROBLEMA: Supabase no actualizó el registro.\n\nEl motivo es que las políticas RLS de tu proyecto Supabase no permiten UPDATE con la clave pública.\n\nPARA SOLUCIONAR en Supabase:\n1. Andá a Authentication → Policies\n2. Seleccioná la tabla "fichas"\n3. Clic en "New Policy" → "For full customization"\n4. Nombre: "Allow UPDATE"\n5. Command: UPDATE\n6. USING: true\n7. WITH CHECK: true\n8. Guardá\n\nHacé lo mismo para DELETE.');
+      toast('RLS bloquea UPDATE en Supabase — ver instrucciones','err',8000);
+      return;
+    }
+
+    const filaGuardada = rows[0];
+    registros[fichaIdx] = filaGuardada;
+    editadosLocales.set(r.id, filaGuardada);
     cerrarEdicion();
     mostrarFicha(fichaIdx);
-    toast('Ficha actualizada correctamente ✓','ok');
+    toast('✓ Ficha actualizada correctamente','ok',4000);
   } catch(err){
-    toast('Error al guardar: '+err.message,'err',5000);
+    console.error('Error guardar:', err);
+    toast('Error: '+err.message,'err',7000);
   }
 }
 
@@ -618,11 +630,23 @@ async function eliminarActual(){
   );
   if(!confirmar) return;
 
+  toast('Eliminando...','',3000);
   try{
-    const {error} = await db.from('fichas').delete().eq('id', r.id);
-    if(error) throw error;
+    // .select() nos dice cuántas filas borró realmente la DB
+    const {data: borrados, error} = await db
+      .from('fichas').delete().eq('id', r.id).select();
 
-    // Marcar como eliminado localmente Y eliminar del array
+    console.log('DELETE resultado:', borrados, 'error:', error, 'id:', r.id);
+
+    if(error) throw new Error(error.message + ' (code: ' + error.code + ')');
+
+    if(!borrados || borrados.length === 0){
+      alert('⚠️ PROBLEMA: Supabase no eliminó el registro.\n\nEl motivo es que las políticas RLS (Row Level Security) de tu proyecto Supabase no permiten DELETE con la clave pública.\n\nPARA SOLUCIONAR:\n1. Abrí tu panel de Supabase\n2. Andá a: Authentication → Policies\n3. Seleccioná la tabla "fichas"\n4. Hacé clic en "New Policy"\n5. Elegí "Enable read access for all users" como base\n6. Cambiá el nombre a "Allow DELETE"\n7. En Command seleccioná DELETE\n8. En USING expression escribí: true\n9. Guardá\n\nHacé lo mismo para UPDATE.');
+      toast('RLS bloquea DELETE en Supabase — ver instrucciones','err',8000);
+      return;
+    }
+
+    // ✅ DB confirmó que borró
     eliminadosLocales.add(r.id);
     registros.splice(fichaIdx, 1);
 
@@ -635,9 +659,10 @@ async function eliminarActual(){
       fichaIdx = Math.min(fichaIdx, registros.length-1);
       mostrarFicha(fichaIdx);
     }
-    toast('Ficha eliminada ✓','ok');
+    toast('✓ Eliminado correctamente de la base de datos','ok',4000);
   } catch(err){
-    toast('Error al eliminar: '+err.message,'err',5000);
+    console.error('Error eliminar:', err);
+    toast('Error: '+err.message,'err',7000);
   }
 }
 
