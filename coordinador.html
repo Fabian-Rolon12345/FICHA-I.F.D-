@@ -97,7 +97,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 
 /* FOTO GRANDE - ocupa su propia zona */
 .fu-foto-wrap{position:relative;z-index:1;padding:2rem 1.5rem 1.5rem;display:flex;justify-content:center}
-.fu-foto{width:260px;height:330px;;border-radius:18px;object-fit:cover;object-position:center top;border:5px solid rgba(255,255,255,.85);box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.2)}
+.fu-foto{width:260px;height:330px;;border-radius:18px;object-fit:contain;object-position:center center;background:#0a4a36;border:5px solid rgba(255,255,255,.85);box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.2)}
 
 /* INFO DEBAJO FOTO */
 .fu-info{color:#fff;position:relative;z-index:1;width:100%;padding:.25rem 1.5rem 1.75rem}
@@ -144,8 +144,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 .bsm-pdf:hover{background:var(--verde-dark);transform:translateY(-1px)}
 .bsm-pdf2{background:#1a73e8;color:#fff;border:none;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
 .bsm-pdf2:hover{background:#1557b0;transform:translateY(-1px)}
-.bsm-print{background:#fff;color:#4b5563;border:1.5px solid #d1d5db;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
-.bsm-print:hover{background:#f3f4f6;border-color:#9ca3af;transform:translateY(-1px)}
+.bsm-print{background:#f59e0b;color:#fff;border:1.5px solid #f59e0b;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
+.bsm-print:hover{background:#d97706;border-color:#d97706;transform:translateY(-1px)}
 
 /* ─────────────── MODAL EDICIÓN ─────────────── */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
@@ -290,13 +290,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 
       <!-- BARRA PDF/IMPRIMIR compacta -->
       <div class="fu-pdf-bar">
-        <span class="pdf-label">⬇ PDF</span>
-        <button class="bsm-pdf" onclick="descargarPDFIndividual()" title="Descargar PDF de este alumno">📄 Individual</button>
-        <button class="bsm-pdf2" onclick="descargarPDFCompleto()" title="Descargar PDF de toda la carrera">📚 Carrera</button>
+        <span class="pdf-label"></span>
+        <button class="bsm-pdf" onclick="descargarPDFIndividual()" title="Descargar PDF de este alumno">📄 Descargar pdf Individual</button>
+        <button class="bsm-pdf2" onclick="descargarPDFCompleto()" title="Descargar PDF de toda la carrera">📚Descargar pdf de la Carrera</button>
         <div class="pdf-sep"></div>
-        <span class="pdf-label">🖨 Imprimir</span>
-        <button class="bsm-print" onclick="imprimirIndividual()" title="Imprimir ficha de este alumno">Individual</button>
-        <button class="bsm-print" onclick="imprimirCompleto()" title="Imprimir toda la carrera">Carrera</button>
+        <span class="pdf-label"></span>
+        <button class="bsm-print" onclick="imprimirIndividual()" title="Imprimir ficha de este alumno">Imprimir Individual</button>
+        <button class="bsm-print" onclick="imprimirCompleto()" title="Imprimir toda la carrera">Imprimir Carrera</button>
       </div>
 
       <!-- CUERPO -->
