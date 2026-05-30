@@ -97,7 +97,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 
 /* FOTO GRANDE - ocupa su propia zona */
 .fu-foto-wrap{position:relative;z-index:1;padding:2rem 1.5rem 1.5rem;display:flex;justify-content:center}
-.fu-foto{width:260px;height:330px;;border-radius:18px;object-fit:contain;object-position:center center;background:#0a4a36;border:5px solid rgba(255,255,255,.85);box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.2)}
+.fu-foto{width:200px;height:255px;border-radius:18px;object-fit:cover;object-position:center top;border:5px solid rgba(255,255,255,.85);box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.2)}
 
 /* INFO DEBAJO FOTO */
 .fu-info{color:#fff;position:relative;z-index:1;width:100%;padding:.25rem 1.5rem 1.75rem}
@@ -144,8 +144,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 .bsm-pdf:hover{background:var(--verde-dark);transform:translateY(-1px)}
 .bsm-pdf2{background:#1a73e8;color:#fff;border:none;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
 .bsm-pdf2:hover{background:#1557b0;transform:translateY(-1px)}
-.bsm-print{background:#f59e0b;color:#fff;border:1.5px solid #f59e0b;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
-.bsm-print:hover{background:#d97706;border-color:#d97706;transform:translateY(-1px)}
+.bsm-print{background:#fff;color:#4b5563;border:1.5px solid #d1d5db;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
+.bsm-print:hover{background:#f3f4f6;border-color:#9ca3af;transform:translateY(-1px)}
 
 /* ─────────────── MODAL EDICIÓN ─────────────── */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
@@ -172,7 +172,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
   .toolbar{flex-direction:column}.tf-btns{width:100%}.tf-btns .btn{flex:1;justify-content:center}
   .fu-grid{grid-template-columns:1fr}.fu-grid.g3{grid-template-columns:1fr 1fr}
   .eg{grid-template-columns:1fr}
-  .fu-foto{width:200px;height:255px}
+  .fu-foto{width:155px;height:200px}
   .fu-pdf-bar{flex-direction:column;align-items:flex-start}
   .pdf-divider{display:none}
 }
@@ -290,13 +290,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 
       <!-- BARRA PDF/IMPRIMIR compacta -->
       <div class="fu-pdf-bar">
-        <span class="pdf-label"></span>
-        <button class="bsm-pdf" onclick="descargarPDFIndividual()" title="Descargar PDF de este alumno">📄 Descargar pdf Individual</button>
-        <button class="bsm-pdf2" onclick="descargarPDFCompleto()" title="Descargar PDF de toda la carrera">📚Descargar pdf de la Carrera</button>
+        <span class="pdf-label">⬇ PDF</span>
+        <button class="bsm-pdf" onclick="descargarPDFIndividual()" title="Descargar PDF de este alumno">📄 Individual</button>
+        <button class="bsm-pdf2" onclick="descargarPDFCompleto()" title="Descargar PDF de toda la carrera">📚 Carrera</button>
         <div class="pdf-sep"></div>
-        <span class="pdf-label"></span>
-        <button class="bsm-print" onclick="imprimirIndividual()" title="Imprimir ficha de este alumno">Imprimir Individual</button>
-        <button class="bsm-print" onclick="imprimirCompleto()" title="Imprimir toda la carrera">Imprimir Carrera</button>
+        <span class="pdf-label">🖨 Imprimir</span>
+        <button class="bsm-print" onclick="imprimirIndividual()" title="Imprimir ficha de este alumno">Individual</button>
+        <button class="bsm-print" onclick="imprimirCompleto()" title="Imprimir toda la carrera">Carrera</button>
       </div>
 
       <!-- CUERPO -->
@@ -801,136 +801,194 @@ function descargarPDFCompleto(){
 }
 
 async function generarPDF(lista, nombre){
-  toast('Generando PDF...','',4000);
+  toast('Generando PDF...','',6000);
   try{
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-    const W=210, H=297;
+    const W=210, H=297, M=14; // margen
+
+    // Convierte URL o data: a base64 usando canvas (necesario para jsPDF)
+    async function urlToBase64(url){
+      if(!url) return null;
+      try{
+        return await new Promise((res)=>{
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            c.width = img.naturalWidth; c.height = img.naturalHeight;
+            c.getContext('2d').drawImage(img,0,0);
+            try{ res(c.toDataURL('image/jpeg',0.92)); }catch(e){ res(null); }
+          };
+          img.onerror = () => res(null);
+          // Forzar recarga sin caché para evitar bloqueo CORS
+          img.src = url.startsWith('data:') ? url : url + (url.includes('?')?'&':'?') + 'cb='+Date.now();
+        });
+      }catch(e){ return null; }
+    }
+
+    function secTitle(doc, txt, y){
+      // Fondo verde claro de sección
+      doc.setFillColor(232,245,240);
+      doc.roundedRect(M, y-4, W-M*2, 8, 2, 2, 'F');
+      doc.setDrawColor(15,110,86); doc.setLineWidth(0.4);
+      doc.line(M, y+4, W-M, y+4);
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(15,110,86);
+      doc.text(txt.toUpperCase(), M+3, y+0.8);
+      return y+10;
+    }
+
+    function campoRect(doc, label, valor, x, y, w){
+      doc.setFillColor(248,252,250);
+      doc.roundedRect(x, y, w, 12, 2, 2, 'F');
+      doc.setDrawColor(204,233,224); doc.setLineWidth(0.25);
+      doc.roundedRect(x, y, w, 12, 2, 2, 'S');
+      doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(113,128,150);
+      doc.text(label.toUpperCase(), x+3, y+4);
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(17,24,39);
+      const val = String(valor||'—');
+      const maxChars = Math.floor(w / 2.2);
+      doc.text(val.length > maxChars ? val.substring(0,maxChars-1)+'…' : val, x+3, y+9.5);
+    }
 
     for(let idx=0; idx<lista.length; idx++){
       const r = lista[idx];
       if(idx>0) doc.addPage();
 
-      // Fondo cabecera verde
+      // ── CABECERA INSTITUCIONAL ──
+      // Fondo degradado (simulado con dos rectángulos)
       doc.setFillColor(15,110,86);
-      doc.roundedRect(10,10,W-20,85,6,6,'F');
+      doc.roundedRect(M, 10, W-M*2, 72, 5, 5, 'F');
+      doc.setFillColor(8,61,46);
+      doc.rect(M, 42, W-M*2, 40, 'F');
+      doc.roundedRect(M, 10, W-M*2, 72, 5, 5, 'F'); // vuelve a tapar esquinas
 
-      // Nombre institución
-      doc.setTextColor(255,255,255);
-      doc.setFontSize(7); doc.setFont('helvetica','bold');
-      doc.text('INSTITUTO DE FORMACIÓN DOCENTE SANTA ROSA · MISIONES · PARAGUAY', W/2, 22, {align:'center'});
+      // Línea institución
+      doc.setFontSize(6.5); doc.setFont('helvetica','bold');
+      doc.setTextColor(220,245,235);
+      doc.text('INSTITUTO DE FORMACION DOCENTE SANTA ROSA  -  MISIONES  -  PARAGUAY', W/2, 17, {align:'center'});
+      doc.setDrawColor(255,255,255,0.3); doc.setLineWidth(0.2);
+      doc.line(M+8, 19, W-M-8, 19);
 
-      // Foto (si existe como data:url)
-      const fotoUrl = r.foto_url || '';
-      let fotoOk = false;
-      if(fotoUrl && fotoUrl.startsWith('data:')){
-        try{
-          const ext = fotoUrl.includes('image/png') ? 'PNG' : 'JPEG';
-          doc.addImage(fotoUrl, ext, W/2-17, 26, 34, 44, undefined, 'MEDIUM');
-          fotoOk = true;
-        }catch(e){}
-      }
-      if(!fotoOk){
+      // ── FOTO (grande, lado izquierdo) ──
+      const fotoBase64 = await urlToBase64(r.foto_url);
+      const fotoX = M+2, fotoY = 22, fotoW = 38, fotoH = 52;
+
+      if(fotoBase64){
+        // Marco blanco detrás de la foto
+        doc.setFillColor(255,255,255);
+        doc.roundedRect(fotoX-1.5, fotoY-1.5, fotoW+3, fotoH+3, 3, 3, 'F');
+        doc.addImage(fotoBase64, 'JPEG', fotoX, fotoY, fotoW, fotoH, undefined, 'MEDIUM');
+        // borde
+        doc.setDrawColor(255,255,255); doc.setLineWidth(0.8);
+        doc.roundedRect(fotoX, fotoY, fotoW, fotoH, 2, 2, 'S');
+      } else {
         doc.setFillColor(8,61,46);
-        doc.roundedRect(W/2-17, 26, 34, 44, 3, 3,'F');
-        doc.setTextColor(255,255,255); doc.setFontSize(8);
-        doc.text('Sin Foto', W/2, 50, {align:'center'});
+        doc.roundedRect(fotoX-1.5, fotoY-1.5, fotoW+3, fotoH+3, 3, 3, 'F');
+        doc.setFillColor(12,75,58);
+        doc.roundedRect(fotoX, fotoY, fotoW, fotoH, 2, 2, 'F');
+        doc.setTextColor(180,220,200); doc.setFontSize(7); doc.setFont('helvetica','normal');
+        doc.text('SIN FOTO', fotoX+fotoW/2, fotoY+fotoH/2, {align:'center'});
       }
 
-      // Nombre y CI
-      doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-      doc.text(r.apellido_nombre||'—', W/2, 78, {align:'center', maxWidth:W-30});
-      doc.setFontSize(10); doc.setFont('helvetica','normal');
-      doc.text('C.I.: '+(r.ci||'—'), W/2, 84, {align:'center'});
+      // ── INFO ALUMNO (lado derecho de la foto) ──
+      const infoX = fotoX + fotoW + 6;
+      const infoW = W - M - infoX;
 
-      // Tags carrera / cohorte / turno
-      doc.setFillColor(184,134,11);
-      const carreraText = (r.carrera||'—').substring(0,38);
-      doc.roundedRect(12,88,W-24,8,2,2,'F');
-      doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-      doc.text(carreraText+' · Cohorte '+(r.cohorte||'—')+' · Turno '+(r.turno||'—'), W/2, 93.5, {align:'center'});
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(16); doc.setFont('helvetica','bold');
+      const nombre = r.apellido_nombre || '—';
+      doc.text(nombre, infoX, 32, {maxWidth: infoW});
 
-      // Datos personales
-      let y = 106;
-      doc.setDrawColor(204,233,224); doc.setLineWidth(0.3);
-      doc.setTextColor(15,110,86); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
-      doc.text('👤  DATOS PERSONALES', 14, y);
-      doc.line(14, y+1.5, W-14, y+1.5);
-      y += 7;
+      doc.setFontSize(9.5); doc.setFont('helvetica','normal');
+      doc.setTextColor(200,235,220);
+      doc.text('C.I.: ' + (r.ci||'—'), infoX, 40);
 
+      // Separador
+      doc.setDrawColor(255,255,255,0.25); doc.setLineWidth(0.2);
+      doc.line(infoX, 43, W-M-2, 43);
+
+      // Carrera (en dos líneas si es larga)
+      doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,230,150);
+      const carreraLines = doc.splitTextToSize(r.carrera||'—', infoW);
+      doc.text(carreraLines.slice(0,2), infoX, 49);
+
+      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(200,235,220);
+      doc.text('Cohorte: ' + (r.cohorte||'—'), infoX, 60);
+      doc.text('Turno: '   + (r.turno||'—'),   infoX, 67);
+      doc.text('Registro: '+ (r.registrado_en ? new Date(r.registrado_en).toLocaleDateString('es-PY') : '—'), infoX, 74);
+
+      // ── DATOS PERSONALES ──
+      let y = 92;
+      y = secTitle(doc, 'Datos Personales', y);
+
+      const CW = (W - M*2 - 4) / 2; // ancho de columna
       const campos = [
-        ['Apellido y Nombre', r.apellido_nombre], ['C.I.', r.ci],
-        ['Fecha de Nacimiento', fmtDate(r.fecha_nacimiento)], ['Edad', (r.edad||'—')+' años'],
-        ['Sexo', r.sexo], ['Nacionalidad', r.nacionalidad],
-        ['Ciudad / Distrito', r.ciudad], ['Departamento', r.departamento],
-        ['Celular', r.celular], ['Correo Electrónico', r.email_personal],
+        ['Apellido y Nombre', r.apellido_nombre],
+        ['Cedula de Identidad', r.ci],
+        ['Fecha de Nacimiento', fmtDate(r.fecha_nacimiento)],
+        ['Edad', (r.edad||'—') + ' anos'],
+        ['Sexo', r.sexo],
+        ['Nacionalidad', r.nacionalidad],
+        ['Ciudad / Distrito', r.ciudad],
+        ['Departamento', r.departamento],
+        ['Celular', r.celular],
+        ['Correo Electronico', r.email_personal],
       ];
-      const col2start = W/2+2;
+
       for(let i=0; i<campos.length; i+=2){
-        const [la, va] = campos[i];
-        const [lb, vb] = campos[i+1]||['',''];
-        // left
-        doc.setFillColor(240,253,248); doc.roundedRect(12,y-3.5,W/2-16,10,1.5,1.5,'F');
-        doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
-        doc.text(la.toUpperCase(), 15, y+0.5);
-        doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
-        doc.text(String(va||'—').substring(0,26), 15, y+5.5);
-        // right
-        if(lb){
-          doc.setFillColor(240,253,248); doc.roundedRect(col2start,y-3.5,W/2-16,10,1.5,1.5,'F');
-          doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
-          doc.text(lb.toUpperCase(), col2start+3, y+0.5);
-          doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
-          doc.text(String(vb||'—').substring(0,26), col2start+3, y+5.5);
-        }
-        y += 13;
+        const [la,va] = campos[i];
+        const [lb,vb] = campos[i+1]||['',''];
+        campoRect(doc, la, va, M,       y, CW);
+        if(lb) campoRect(doc, lb, vb, M+CW+4, y, CW);
+        y += 15;
       }
 
-      // Datos académicos
+      // ── DATOS ACADEMICOS ──
       y += 2;
-      doc.setTextColor(15,110,86); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
-      doc.text('🎓  DATOS ACADÉMICOS', 14, y);
-      doc.line(14, y+1.5, W-14, y+1.5);
-      y += 7;
+      y = secTitle(doc, 'Datos Academicos', y);
 
-      doc.setFillColor(240,253,248); doc.roundedRect(12,y-3.5,W-24,10,1.5,1.5,'F');
-      doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
-      doc.text('CARRERA', 15, y+0.5);
-      doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
-      doc.text(String(r.carrera||'—').substring(0,60), 15, y+5.5);
-      y += 13;
+      // Carrera full width
+      doc.setFillColor(248,252,250);
+      doc.roundedRect(M, y, W-M*2, 12, 2, 2, 'F');
+      doc.setDrawColor(204,233,224); doc.setLineWidth(0.25);
+      doc.roundedRect(M, y, W-M*2, 12, 2, 2, 'S');
+      doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(113,128,150);
+      doc.text('CARRERA', M+3, y+4);
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(17,24,39);
+      const carreraFull = doc.splitTextToSize(r.carrera||'—', W-M*2-6);
+      doc.text(carreraFull[0], M+3, y+9.5);
+      y += 15;
 
-      const acads = [['Cohorte', r.cohorte],['Turno', r.turno],['Fecha de Registro', r.registrado_en?new Date(r.registrado_en).toLocaleDateString('es-PY'):'—']];
-      for(let i=0; i<acads.length; i+=2){
-        const [la,va]=acads[i]; const [lb,vb]=acads[i+1]||['',''];
-        doc.setFillColor(240,253,248); doc.roundedRect(12,y-3.5,W/2-16,10,1.5,1.5,'F');
-        doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
-        doc.text(la.toUpperCase(), 15, y+0.5);
-        doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
-        doc.text(String(va||'—'), 15, y+5.5);
-        if(lb){
-          doc.setFillColor(240,253,248); doc.roundedRect(col2start,y-3.5,W/2-16,10,1.5,1.5,'F');
-          doc.setTextColor(113,128,150); doc.setFontSize(6); doc.setFont('helvetica','bold');
-          doc.text(lb.toUpperCase(), col2start+3, y+0.5);
-          doc.setTextColor(17,24,39); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
-          doc.text(String(vb||'—'), col2start+3, y+5.5);
-        }
-        y+=13;
+      const acadCW = (W-M*2-8)/3;
+      const acads  = [
+        ['Cohorte', r.cohorte],
+        ['Turno', r.turno],
+        ['Fecha de Registro', r.registrado_en ? new Date(r.registrado_en).toLocaleDateString('es-PY') : '—'],
+      ];
+      for(let i=0;i<acads.length;i++){
+        campoRect(doc, acads[i][0], acads[i][1], M + i*(acadCW+4), y, acadCW);
       }
+      y += 15;
 
-      // Pie
-      doc.setDrawColor(226,232,240); doc.line(14, H-18, W-14, H-18);
-      doc.setTextColor(156,163,175); doc.setFontSize(7); doc.setFont('helvetica','normal');
-      doc.text('Instituto de Formación Docente Santa Rosa · Misiones, Paraguay · Registro 2026 · Documento Oficial', W/2, H-13, {align:'center'});
+      // ── PIE ──
+      doc.setDrawColor(226,232,240); doc.setLineWidth(0.3);
+      doc.line(M, H-16, W-M, H-16);
+      doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(156,163,175);
+      doc.text(
+        'Instituto de Formacion Docente Santa Rosa  ·  Misiones, Paraguay  ·  Documento Oficial 2026',
+        W/2, H-11, {align:'center'}
+      );
     }
 
     doc.save(nombre);
-    toast('PDF descargado ✓','ok');
+    toast('PDF descargado correctamente','ok', 4000);
   }catch(e){
     console.error(e);
-    toast('Error al generar PDF: '+e.message,'err',5000);
+    toast('Error al generar PDF: '+e.message,'err',6000);
   }
 }
+
 
 function estilosPrint(){
   return `<style>
