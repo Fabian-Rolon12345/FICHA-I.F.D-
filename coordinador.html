@@ -108,19 +108,25 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 .fu-tag.oro{background:rgba(184,134,11,.55);border:1px solid rgba(255,220,80,.3)}
 
 /* ── CUERPO FICHA ── */
-.fu-body{padding:1.75rem 2rem}
+.fu-body{padding:0}
 
-.fu-section{margin-bottom:1.6rem}
-.fu-section:last-child{margin-bottom:0}
-.fu-sec-title{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--verde);padding-bottom:.5rem;margin-bottom:1rem;border-bottom:2px solid #cce9e0;display:flex;align-items:center;gap:.4rem}
+.fu-section{margin-bottom:0;border-bottom:1px solid var(--borde)}
+.fu-section:last-child{border-bottom:none}
+.fu-sec-header{padding:1rem 1.75rem .6rem;display:flex;align-items:center;gap:.5rem;background:#f8fffe}
+.fu-sec-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.fu-sec-icon.verde{background:#dcfce7}
+.fu-sec-icon.azul{background:#dbeafe}
+.fu-sec-title{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;color:var(--verde);margin:0}
 
-.fu-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.fu-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:.25rem 1.25rem 1.25rem}
 .fu-grid.g3{grid-template-columns:1fr 1fr 1fr}
-.fu-field{background:linear-gradient(145deg,#f0fdf8,#f9fafb);padding:.8rem 1rem;border-radius:11px;border-left:3px solid var(--verde);transition:box-shadow .2s}
-.fu-field:hover{box-shadow:0 4px 14px rgba(15,110,86,.1)}
+.fu-field{padding:.7rem .75rem;border-radius:10px;transition:background .15s;position:relative}
+.fu-field:hover{background:#f0fdf8}
 .fu-field.full{grid-column:1/-1}
-.fu-field label{display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.07em;margin-bottom:.28rem}
-.fu-field p{font-size:.92rem;font-weight:600;color:#111827;word-break:break-word}
+.fu-field label{display:flex;align-items:center;gap:.3rem;font-size:.58rem;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.08em;margin-bottom:.22rem}
+.fu-field label::before{content:'';display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--verde);flex-shrink:0}
+.fu-field p{font-size:.93rem;font-weight:600;color:#111827;word-break:break-word;line-height:1.3}
+.fu-field p.highlight{color:var(--verde);font-size:1rem}
 
 /* ── ACCIONES ── */
 .fu-actions{padding:1.1rem 2rem;border-top:1px solid var(--borde);display:flex;gap:.6rem;justify-content:flex-start;flex-wrap:wrap;background:#fafcff}
@@ -130,17 +136,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 .bsm-del{background:#fef2f2;color:#dc2626;border-color:#dc2626}
 .bsm-del:hover{background:#dc2626;color:#fff}
 
-/* ── ACCIONES PDF (separadas en toolbar interno de la ficha) ── */
-.fu-pdf-bar{padding:.9rem 2rem;border-bottom:1px solid var(--borde);display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;background:var(--verde-light)}
-.pdf-group{display:flex;align-items:center;gap:.4rem}
-.pdf-divider{width:1px;height:28px;background:var(--borde);margin:0 .35rem}
-.pdf-label{font-size:.68rem;font-weight:800;color:var(--verde);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
-.bsm-pdf{background:var(--verde);color:#fff;border:none;padding:.5rem 1rem;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s}
+/* ── BARRA PDF/IMPRIMIR compacta ── */
+.fu-pdf-bar{padding:.6rem 1.5rem;border-bottom:1px solid var(--borde);display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;background:linear-gradient(to right,#f0fdf8,#f8fffe)}
+.pdf-sep{width:1px;height:20px;background:#d1fae5;margin:0 .2rem}
+.pdf-label{font-size:.6rem;font-weight:800;color:var(--verde);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;opacity:.7}
+.bsm-pdf{background:var(--verde);color:#fff;border:none;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
 .bsm-pdf:hover{background:var(--verde-dark);transform:translateY(-1px)}
-.bsm-pdf2{background:#1a73e8;color:#fff;border:none;padding:.5rem 1rem;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s}
+.bsm-pdf2{background:#1a73e8;color:#fff;border:none;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
 .bsm-pdf2:hover{background:#1557b0;transform:translateY(-1px)}
-.bsm-print{background:#fff;color:#374151;border:2px solid #d1d5db;padding:.5rem 1rem;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s}
-.bsm-print:hover{background:#f9fafb;border-color:#6b7280;transform:translateY(-1px)}
+.bsm-print{background:#fff;color:#4b5563;border:1.5px solid #d1d5db;padding:.38rem .85rem;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.28rem;transition:all .18s}
+.bsm-print:hover{background:#f3f4f6;border-color:#9ca3af;transform:translateY(-1px)}
 
 /* ─────────────── MODAL EDICIÓN ─────────────── */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
@@ -283,19 +288,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
         </div>
       </div>
 
-      <!-- BARRA DE PDF + IMPRIMIR -->
+      <!-- BARRA PDF/IMPRIMIR compacta -->
       <div class="fu-pdf-bar">
-        <span class="pdf-label">📥 Descargar:</span>
-        <div class="pdf-group">
-          <button class="bsm-pdf" onclick="descargarPDFIndividual()">📄 PDF Individual</button>
-          <button class="bsm-pdf2" onclick="descargarPDFCompleto()">📚 PDF Completo de Carrera</button>
-        </div>
-        <div class="pdf-divider"></div>
-        <span class="pdf-label">🖨️ Imprimir:</span>
-        <div class="pdf-group">
-          <button class="bsm-print" onclick="imprimirIndividual()">🖨️ Individual</button>
-          <button class="bsm-print" onclick="imprimirCompleto()">🖨️ Carrera Completa</button>
-        </div>
+        <span class="pdf-label">⬇ PDF</span>
+        <button class="bsm-pdf" onclick="descargarPDFIndividual()" title="Descargar PDF de este alumno">📄 Individual</button>
+        <button class="bsm-pdf2" onclick="descargarPDFCompleto()" title="Descargar PDF de toda la carrera">📚 Carrera</button>
+        <div class="pdf-sep"></div>
+        <span class="pdf-label">🖨 Imprimir</span>
+        <button class="bsm-print" onclick="imprimirIndividual()" title="Imprimir ficha de este alumno">Individual</button>
+        <button class="bsm-print" onclick="imprimirCompleto()" title="Imprimir toda la carrera">Carrera</button>
       </div>
 
       <!-- CUERPO -->
@@ -303,9 +304,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
 
         <!-- Datos Personales -->
         <div class="fu-section">
-          <div class="fu-sec-title">👤 Datos Personales</div>
+          <div class="fu-sec-header">
+            <div class="fu-sec-icon verde">👤</div>
+            <div class="fu-sec-title">Datos Personales</div>
+          </div>
           <div class="fu-grid">
-            <div class="fu-field"><label>Apellido y Nombre</label><p id="fNombreD"></p></div>
+            <div class="fu-field full"><label>Apellido y Nombre</label><p id="fNombreD" class="highlight"></p></div>
             <div class="fu-field"><label>C.I.</label><p id="fCID"></p></div>
             <div class="fu-field"><label>Fecha de Nacimiento</label><p id="fFechaNac"></p></div>
             <div class="fu-field"><label>Edad</label><p id="fEdad"></p></div>
@@ -313,19 +317,22 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--gris);color:var(-
             <div class="fu-field"><label>Nacionalidad</label><p id="fNacionalidad"></p></div>
             <div class="fu-field"><label>Ciudad / Distrito</label><p id="fCiudad"></p></div>
             <div class="fu-field"><label>Departamento</label><p id="fDepartamento"></p></div>
-            <div class="fu-field"><label>Celular</label><p id="fCelular"></p></div>
-            <div class="fu-field"><label>Correo Electrónico</label><p id="fEmail"></p></div>
+            <div class="fu-field"><label>📱 Celular</label><p id="fCelular"></p></div>
+            <div class="fu-field"><label>✉️ Correo Electrónico</label><p id="fEmail"></p></div>
           </div>
         </div>
 
         <!-- Datos Académicos -->
         <div class="fu-section">
-          <div class="fu-sec-title">🎓 Datos Académicos</div>
+          <div class="fu-sec-header">
+            <div class="fu-sec-icon azul">🎓</div>
+            <div class="fu-sec-title" style="color:#1a73e8">Datos Académicos</div>
+          </div>
           <div class="fu-grid">
-            <div class="fu-field full"><label>Carrera</label><p id="fCarreraD"></p></div>
+            <div class="fu-field full"><label>Carrera</label><p id="fCarreraD" class="highlight"></p></div>
             <div class="fu-field"><label>Cohorte</label><p id="fCohorteD"></p></div>
             <div class="fu-field"><label>Turno</label><p id="fTurnoD"></p></div>
-            <div class="fu-field full"><label>Fecha de Registro</label><p id="fRegistro"></p></div>
+            <div class="fu-field full"><label>🗓 Fecha de Registro</label><p id="fRegistro"></p></div>
           </div>
         </div>
 
@@ -484,14 +491,41 @@ async function cargarRegistros(){
 }
 
 async function actualizarDatos(){
-  // Actualizar = refrescar la VISTA con los datos ya en memoria
-  // NO recarga de la DB para no perder ediciones/eliminaciones locales
-  if(registros.length > 0){
-    mostrarFicha(fichaIdx);
-    toast('Vista actualizada ✓','ok');
-  } else {
-    // Solo si no hay nada cargado, ir a buscar de la DB
-    await cargarRegistros();
+  const car = document.getElementById('filterCarrera').value;
+  if(!car){ toast('Seleccioná una carrera primero','err'); return; }
+
+  // Guardar el ID del alumno actual para volver a él
+  const idActual = registros[fichaIdx] ? registros[fichaIdx].id : null;
+
+  const sb = document.getElementById('stateBox');
+  const sw = document.getElementById('sliderWrap');
+
+  try{
+    const {data, error} = await db
+      .from('fichas').select('*').eq('carrera', car)
+      .order('apellido_nombre', {ascending:true});
+    if(error) throw error;
+
+    // Aplicar filtros locales: quitar eliminados, aplicar ediciones
+    registros = (data || [])
+      .filter(r => !eliminadosLocales.has(r.id))
+      .map(r => editadosLocales.has(r.id) ? Object.assign({}, r, editadosLocales.get(r.id)) : r);
+
+    if(registros.length === 0){
+      sb.innerHTML='<div style="font-size:2.5rem;margin-bottom:1rem">👤</div><p style="font-size:1rem;font-weight:600">No hay estudiantes en esta carrera</p>';
+      sb.style.display='block'; sw.style.display='none';
+    } else {
+      // Intentar volver al mismo alumno
+      if(idActual){
+        const nuevoIdx = registros.findIndex(r => r.id === idActual);
+        fichaIdx = nuevoIdx >= 0 ? nuevoIdx : 0;
+      } else { fichaIdx = 0; }
+      sb.style.display='none'; sw.style.display='flex';
+      mostrarFicha(fichaIdx);
+      toast('✓ Datos actualizados — '+registros.length+' estudiante(s)','ok',3000);
+    }
+  } catch(err){
+    toast('Error al actualizar: '+err.message,'err',5000);
   }
 }
 
@@ -682,66 +716,59 @@ async function eliminarActual(){
 
 // ══════════ PDF / IMPRESIÓN ══════════
 function htmlFicha(r){
-  const foto = r.foto_url || 'https://placehold.co/160x200/0F6E56/fff?text=Sin+Foto';
-  const regDate = r.registrado_en ? new Date(r.registrado_en).toLocaleDateString('es-PY') : '—';
+  const foto = r.foto_url || 'https://placehold.co/110x140/083d2e/e8f5f0?text=Sin+Foto';
+  const regDate = r.registrado_en
+    ? new Date(r.registrado_en).toLocaleDateString('es-PY',{day:'2-digit',month:'long',year:'numeric'})
+    : '—';
 
-  const campo = (label, valor) => `
-    <div style="background:linear-gradient(145deg,#f0fdf8,#f9fafb);padding:10px 12px;border-radius:10px;border-left:3px solid #0F6E56">
-      <div style="font-size:8px;color:#718096;text-transform:uppercase;font-weight:700;letter-spacing:.8px;margin-bottom:3px">${label}</div>
-      <div style="font-size:13px;font-weight:700;color:#111827">${valor||'—'}</div>
-    </div>`;
+  const pf = (label, valor) =>
+    `<div class="pf-field"><label>${label}</label><p>${valor||'—'}</p></div>`;
 
   return `
-<div class="pf-page" style="background:#fff;font-family:Inter,system-ui,sans-serif">
-  <!-- ENCABEZADO CON FOTO GRANDE -->
-  <div style="background:linear-gradient(145deg,#0F6E56,#083d2e);color:#fff;padding:2rem;border-radius:14px;margin-bottom:1.75rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.25rem">
-    <img src="${foto}" style="width:140px;height:180px;border-radius:14px;object-fit:cover;border:5px solid rgba(255,255,255,.7);box-shadow:0 10px 28px rgba(0,0,0,.35)" onerror="this.src='https://placehold.co/140x180/ccc/fff?text=Foto'">
-    <div>
-      <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.7;margin-bottom:6px">Instituto de Formación Docente Santa Rosa · Misiones · Paraguay</div>
-      <div style="font-size:24px;font-weight:800;line-height:1.2;margin-bottom:5px">${r.apellido_nombre||'—'}</div>
-      <div style="font-size:13px;opacity:.85;margin-bottom:10px">C.I.: ${r.ci||'—'}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">
-        <span style="background:rgba(184,134,11,.5);padding:4px 13px;border-radius:9999px;font-size:11px;font-weight:700">${r.carrera||'—'}</span>
-        <span style="background:rgba(255,255,255,.18);padding:4px 13px;border-radius:9999px;font-size:11px;font-weight:700">Cohorte ${r.cohorte||'—'}</span>
-        <span style="background:rgba(255,255,255,.18);padding:4px 13px;border-radius:9999px;font-size:11px;font-weight:700">Turno ${r.turno||'—'}</span>
+<div class="pf-page">
+  <div class="pf-head">
+    <div class="pf-inst-bar">Instituto de Formación Docente Santa Rosa &middot; Misiones &middot; Paraguay</div>
+    <div class="pf-foto-row">
+      <img src="${foto}" class="pf-foto" onerror="this.src='https://placehold.co/110x140/083d2e/e8f5f0?text=Sin+Foto'">
+      <div class="pf-info">
+        <div class="pf-nombre">${r.apellido_nombre||'—'}</div>
+        <div class="pf-ci">C.I.: ${r.ci||'—'}</div>
+        <div class="pf-tags">
+          <span class="pf-tag oro">${abreviar(r.carrera,42)}</span>
+          <span class="pf-tag">Cohorte ${r.cohorte||'—'}</span>
+          <span class="pf-tag">${r.turno||'—'}</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- DATOS PERSONALES -->
-  <div style="margin-bottom:1.5rem">
-    <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#0F6E56;border-bottom:2px solid #cce9e0;padding-bottom:6px;margin-bottom:12px">👤 Datos Personales</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      ${campo('Apellido y Nombre', r.apellido_nombre)}
-      ${campo('C.I.', r.ci)}
-      ${campo('Fecha de Nacimiento', fmtDate(r.fecha_nacimiento))}
-      ${campo('Edad', (r.edad??'—')+' años')}
-      ${campo('Sexo', r.sexo)}
-      ${campo('Nacionalidad', r.nacionalidad)}
-      ${campo('Ciudad / Distrito', r.ciudad)}
-      ${campo('Departamento', r.departamento)}
-      ${campo('Celular', r.celular)}
-      ${campo('Correo Electrónico', r.email_personal)}
+  <div class="pf-section">
+    <div class="pf-sec-title">👤 Datos Personales</div>
+    <div class="pf-grid">
+      <div class="pf-field full"><label>Apellido y Nombre</label><p>${r.apellido_nombre||'—'}</p></div>
+      ${pf('C.I.', r.ci)}${pf('Fecha de Nacimiento', fmtDate(r.fecha_nacimiento))}
+      ${pf('Edad', (r.edad||'—')+' años')}${pf('Sexo', r.sexo)}
+      ${pf('Nacionalidad', r.nacionalidad)}${pf('Ciudad / Distrito', r.ciudad)}
+      ${pf('Departamento', r.departamento)}${pf('Celular', r.celular)}
+      <div class="pf-field full"><label>Correo Electrónico</label><p>${r.email_personal||'—'}</p></div>
     </div>
   </div>
 
-  <!-- DATOS ACADÉMICOS -->
-  <div style="margin-bottom:1.75rem">
-    <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#0F6E56;border-bottom:2px solid #cce9e0;padding-bottom:6px;margin-bottom:12px">🎓 Datos Académicos</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div style="grid-column:1/-1">${campo('Carrera', r.carrera)}</div>
-      ${campo('Cohorte', r.cohorte)}
-      ${campo('Turno', r.turno)}
-      ${campo('Fecha de Registro', regDate)}
+  <div class="pf-section">
+    <div class="pf-sec-title">🎓 Datos Académicos</div>
+    <div class="pf-grid">
+      <div class="pf-field full"><label>Carrera</label><p>${r.carrera||'—'}</p></div>
+      ${pf('Cohorte', r.cohorte)}${pf('Turno', r.turno)}
+      <div class="pf-field full"><label>Fecha de Registro</label><p>${regDate}</p></div>
     </div>
   </div>
 
-  <!-- PIE -->
-  <div style="text-align:center;font-size:9px;color:#9ca3af;border-top:1px solid #e2e8f0;padding-top:12px;margin-top:auto">
-    Instituto de Formación Docente Santa Rosa · Misiones, Paraguay · Registro 2026 · Documento Oficial
+  <div class="pf-footer">
+    Instituto de Formación Docente Santa Rosa · Misiones, Paraguay · Documento Oficial 2026
   </div>
 </div>`;
 }
+
 
 function imprimirIndividual(){
   const r = registros[fichaIdx];
@@ -907,37 +934,84 @@ async function generarPDF(lista, nombre){
 
 function estilosPrint(){
   return `<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-    @page{size:A4;margin:1.25cm}
-    body{margin:0;font-family:Inter,system-ui,sans-serif}
-    @media print{body *{visibility:hidden}#printArea,#printArea *{visibility:visible}#printArea{position:fixed;inset:0;background:#fff}}
-    .pf-page{page-break-after:always;padding:0}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @page{size:A4 portrait;margin:1.2cm 1.5cm}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,sans-serif;background:#fff;color:#1a202c}
+    .pf-page{page-break-after:always;padding:0;max-width:100%}
     .pf-page:last-child{page-break-after:avoid}
+
+    /* CABECERA */
+    .pf-head{background:linear-gradient(135deg,#0F6E56,#083d2e);color:#fff;padding:0;border-radius:12px;overflow:hidden;margin-bottom:16px;display:flex;flex-direction:column;align-items:center;text-align:center}
+    .pf-inst-bar{width:100%;padding:8px 16px;background:rgba(0,0,0,.2);font-size:7px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.9}
+    .pf-foto-row{display:flex;align-items:flex-end;justify-content:center;gap:24px;padding:16px 24px 12px;width:100%}
+    .pf-foto{width:110px;height:140px;border-radius:10px;object-fit:cover;border:3px solid rgba(255,255,255,.8);flex-shrink:0}
+    .pf-info{text-align:left;flex:1}
+    .pf-nombre{font-size:20px;font-weight:700;line-height:1.2;margin-bottom:4px}
+    .pf-ci{font-size:12px;opacity:.85;margin-bottom:8px}
+    .pf-tags{display:flex;flex-wrap:wrap;gap:5px}
+    .pf-tag{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:999px;font-size:8px;font-weight:700}
+    .pf-tag.oro{background:rgba(184,134,11,.6)}
+
+    /* SECCIONES */
+    .pf-section{margin-bottom:12px}
+    .pf-sec-title{font-size:7.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#0F6E56;padding-bottom:4px;margin-bottom:8px;border-bottom:2px solid #cce9e0;display:flex;align-items:center;gap:4px}
+    .pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+    .pf-grid.g3{grid-template-columns:1fr 1fr 1fr}
+    .pf-field{background:#f0fdf8;padding:5px 8px;border-radius:6px;border-left:2.5px solid #0F6E56}
+    .pf-field.full{grid-column:1/-1}
+    .pf-field label{display:block;font-size:6px;color:#718096;text-transform:uppercase;font-weight:700;letter-spacing:.06em;margin-bottom:2px}
+    .pf-field p{font-size:9px;font-weight:600;color:#111827}
+
+    /* PIE */
+    .pf-footer{margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;text-align:center;font-size:7px;color:#9ca3af}
   </style>`;
 }
 
 // ══════════ REALTIME ══════════
+let realtimePendientes = 0;
+
 function escucharNuevos(){
   db.channel('realtime-fichas')
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'fichas'}, payload=>{
       const car = document.getElementById('filterCarrera').value;
-      if(car && payload.new.carrera===car){
-        // Evitar duplicados: verificar que el id no exista ya en el array
-        const existe = registros.some(reg => reg.id === payload.new.id);
-        if(!existe){
-          registros.push(payload.new);
-          registros.sort((a,b)=>(a.apellido_nombre||'').localeCompare(b.apellido_nombre||''));
-          document.getElementById('sliderWrap').style.display='flex';
-          document.getElementById('stateBox').style.display='none';
-          mostrarFicha(fichaIdx);
-        }
-      }
+      const nuevo = payload.new;
+
+      // Badge global siempre
+      realtimePendientes++;
       const bn = document.getElementById('badgeNotif');
       const bc = document.getElementById('badgeNum');
-      bc.textContent = (parseInt(bc.textContent)||0)+1;
-      bn.style.display='inline-flex';
-      toast('¡Nuevo estudiante registrado!','ok',4000);
+      bc.textContent = realtimePendientes;
+      bn.style.display = 'inline-flex';
+
+      if(car && nuevo.carrera === car){
+        // Es de la carrera que se está viendo — agregar directamente
+        const existe = registros.some(r => r.id === nuevo.id);
+        if(!existe){
+          registros.push(nuevo);
+          registros.sort((a,b)=>(a.apellido_nombre||'').localeCompare(b.apellido_nombre||''));
+          // Actualizar contador del slider sin saltar de ficha
+          document.getElementById('sliderCounter').textContent =
+            (fichaIdx+1) + ' / ' + registros.length;
+          actualizarBotones();
+          document.getElementById('sliderWrap').style.display='flex';
+          document.getElementById('stateBox').style.display='none';
+          toast('✓ Nuevo alumno agregado: '+nuevo.apellido_nombre,'ok',5000);
+        }
+      } else if(car && nuevo.carrera !== car) {
+        // Es de otra carrera — solo notificar
+        toast('📥 Nuevo registro en: '+nuevo.carrera.substring(0,40),'',4000);
+      } else {
+        // No hay carrera seleccionada
+        toast('📥 Nuevo estudiante registrado','ok',4000);
+      }
     }).subscribe();
+}
+
+function actualizarBotones(){
+  document.getElementById('btnPrev').disabled = (fichaIdx === 0);
+  document.getElementById('btnNext').disabled = (fichaIdx >= registros.length-1);
+  document.getElementById('sliderCounter').textContent = (fichaIdx+1)+' / '+registros.length;
 }
 
 // ══════════ COPIAR ENLACE ══════════
@@ -957,16 +1031,6 @@ function fmtDate(d){
 function abreviar(str, max){
   if(!str) return '—';
   return str.length<=max ? str : str.substring(0,max-1)+'…';
-}
-
-// 🔊 FUNCIÓN PARA ESCUCHAR CAMBIOS EN TIEMPO REAL
-function activarTiempoReal() {
-    supabase
-        .channel('public:registros')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'registros' }, () => {
-            cargarRegistros(); // Recarga la tabla automáticamente al llegar un nuevo registro
-        })
-        .subscribe();
 }
 </script>
 </body>
